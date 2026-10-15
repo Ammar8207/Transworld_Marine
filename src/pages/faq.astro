@@ -1,0 +1,148 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const faqGroups = [
+  {
+    category: "Ordering",
+    questions: [
+      { question: "How do I place an order?", answer: "Send us your vessel name, port, ETA, and the provisions or stores you need through our contact form. Our operations team will confirm the details and prepare a clear quote." },
+      { question: "What information do I need to provide?", answer: "Please include the vessel name, delivery port, expected arrival time, requested items, quantities, and any relevant specifications or dietary requirements." },
+      { question: "How far in advance should I order?", answer: "We recommend ordering as early as practical, ideally several days before arrival. We can often help with shorter notice, depending on the port, quantities, and availability." },
+      { question: "Do you have a minimum order value?", answer: "Minimums depend on the port, delivery timing, and order type. Contact us with your requirements and we will confirm the most practical arrangement." },
+    ],
+  },
+  {
+    category: "Delivery",
+    questions: [
+      { question: "Which ports do you deliver to?", answer: "We coordinate deliveries across our port network, including Singapore, Yokohama, Busan, Rotterdam, Houston, and many other locations. Visit our ports page to explore the network." },
+      { question: "How is delivery timed to my vessel's arrival?", answer: "We coordinate with your vessel team or port agent using the ETA, berth details, and local delivery requirements, then keep you updated if timing changes." },
+      { question: "What documents come with delivery?", answer: "Deliveries can include the order confirmation, delivery note, itemised documentation, and any product or compliance records required for the order." },
+    ],
+  },
+  {
+    category: "Products",
+    questions: [
+      { question: "What provisions do you supply?", answer: "We source fresh, frozen, dry, and beverage provisions alongside the everyday supplies your crew needs, subject to local availability and specifications." },
+      { question: "Do you accommodate dietary requirements?", answer: "Yes. Share dietary, allergen, religious, or medical requirements when ordering so we can recommend suitable products and document the details clearly." },
+      { question: "Can I reorder the same list next time?", answer: "Yes. We can use a previous order as a starting point and update quantities, substitutions, or delivery details for the next port call." },
+    ],
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqGroups.flatMap((group) => group.questions.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answer,
+    },
+  }))),
+};
+---
+
+<Layout title="FAQ – Transworld Marine" description="Find clear answers about ordering, delivery, and ship supply products from Transworld Marine.">
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)}></script>
+  </Fragment>
+
+  <main class="faq-page">
+    <section class="faq-hero" aria-labelledby="faq-title">
+      <div class="faq-hero-inner">
+        <p class="eyebrow">Common questions</p>
+        <h1 id="faq-title">Everything you need to know before ordering</h1>
+        <p class="hero-intro">Clear answers about ordering, delivery, and the products we coordinate for your vessel and crew.</p>
+      </div>
+    </section>
+
+    <section class="faq-content" aria-labelledby="faq-content-title">
+      <h2 id="faq-content-title" class="visually-hidden">Frequently asked questions</h2>
+      {faqGroups.map((group) => (
+        <section class="faq-category" aria-labelledby={`category-${group.category.toLowerCase()}`}>
+          <p class="category-label" id={`category-${group.category.toLowerCase()}`}>{group.category}</p>
+          <div class="faq-list">
+            {group.questions.map((faq) => (
+              <details class="faq-item">
+                <summary>{faq.question}</summary>
+                <div class="faq-answer" data-faq-answer>
+                  <div class="faq-answer-inner"><p>{faq.answer}</p></div>
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+      ))}
+    </section>
+
+    <section class="faq-cta" aria-labelledby="faq-cta-title">
+      <div>
+        <p class="eyebrow">Need a hand?</p>
+        <h2 id="faq-cta-title">Still have questions?</h2>
+      </div>
+      <a class="btn btn-primary" href="/contact">Contact us <span aria-hidden="true">-&gt;</span></a>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  function initFaq() {
+    const faqPage = document.querySelector<HTMLElement>(".faq-page");
+    if (!faqPage || faqPage.dataset.initialized === "true") return;
+    faqPage.dataset.initialized = "true";
+    document.documentElement.classList.add("faq-js");
+    const faqItems = faqPage.querySelectorAll<HTMLDetailsElement>(".faq-item");
+
+    function animateAnswer(item: HTMLDetailsElement) {
+      const answer = item.querySelector<HTMLElement>("[data-faq-answer]");
+      if (!answer) return;
+
+      if (item.open) {
+        answer.style.maxHeight = "0px";
+        requestAnimationFrame(() => {
+          answer.style.maxHeight = `${answer.scrollHeight}px`;
+        });
+      } else {
+        answer.style.maxHeight = `${answer.scrollHeight}px`;
+        requestAnimationFrame(() => {
+          answer.style.maxHeight = "0px";
+        });
+      }
+    }
+
+    faqItems.forEach((item) => item.addEventListener("toggle", () => animateAnswer(item)));
+  }
+
+  document.addEventListener("DOMContentLoaded", initFaq);
+  document.addEventListener("astro:page-load", initFaq);
+</script>
+
+<style>
+  .faq-page { background: var(--light-bg); color: var(--light-text); }
+  .faq-hero { padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 5vw, 3rem); background: var(--dark-bg); color: var(--dark-text); }
+  .faq-hero-inner { max-width: 1180px; margin: 0 auto; }
+  .eyebrow, .category-label { margin: 0 0 1rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  .faq-hero .eyebrow { color: var(--accent); }
+  h1 { max-width: 900px; margin: 0; font-size: clamp(2.7rem, 7vw, 6rem); line-height: 0.98; letter-spacing: -0.045em; }
+  .hero-intro { max-width: 620px; margin: 2rem 0 0; color: var(--dark-text); opacity: 0.82; font-size: 1.15rem; line-height: 1.7; }
+  .faq-content { max-width: 900px; margin: 0 auto; padding: clamp(5rem, 9vw, 8rem) clamp(1.25rem, 5vw, 3rem); }
+  .faq-category + .faq-category { margin-top: clamp(4rem, 8vw, 7rem); }
+  .category-label { margin-bottom: 1.5rem; }
+  .faq-list { border-top: 1px solid var(--light-border); }
+  .faq-item { border-bottom: 1px solid var(--light-border); }
+  .faq-item summary { position: relative; display: flex; justify-content: space-between; gap: 2rem; align-items: center; padding: 1.35rem 2.5rem 1.35rem 0; cursor: pointer; list-style: none; font-size: clamp(1.05rem, 2vw, 1.25rem); font-weight: 700; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { position: absolute; top: 50%; right: 0; color: var(--light-accent); content: "+"; font-size: 1.6rem; font-weight: 400; line-height: 1; transform: translateY(-50%); transition: transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+  .faq-item[open] summary { color: var(--light-accent); }
+  .faq-item[open] summary::after { transform: translateY(-50%) rotate(45deg); color: var(--light-accent); }
+  .faq-answer { max-height: none; overflow: hidden; }
+  html.faq-js .faq-answer { max-height: 0; transition: max-height var(--dur) var(--ease); }
+  .faq-answer-inner { padding: 0 2.5rem 1.35rem 0; }
+  .faq-answer p { max-width: 700px; margin: 0; color: var(--light-muted); line-height: 1.7; }
+  .faq-cta { display: flex; justify-content: space-between; align-items: end; gap: 2rem; max-width: 1180px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 3rem) clamp(5rem, 9vw, 8rem); }
+  .faq-cta h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.05; }
+  .faq-cta .eyebrow { margin-bottom: 1rem; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  @media (max-width: 600px) { .faq-cta { align-items: flex-start; flex-direction: column; } }
+</style>

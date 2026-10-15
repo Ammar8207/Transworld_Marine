@@ -1,17 +1,30 @@
 ---
-
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/Hero.astro";
+import WaveDivider from "../components/WaveDivider.astro";
+import ServiceBlocks from "../components/ServiceBlocks.astro";
+import ProcessSteps from "../components/ProcessSteps.astro";
+import Stats from "../components/Stats.astro";
+import CtaBanner from "../components/CtaBanner.astro";
+import PortsPreview from "../components/PortsPreview.astro";
+import NewsTeaser from "../components/NewsTeaser.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Ship Supply" description="Reliable provisions, stores, and marine logistics for vessels wherever they call.">
+  <Hero />
+  <WaveDivider from="--dark-bg" to="--light-bg" />
+  <ServiceBlocks />
+  <ProcessSteps />
+  <WaveDivider from="--light-bg" to="--dark-bg" />
+  <Stats />
+  <CtaBanner />
+  <WaveDivider from="--dark-surface" to="--light-bg" />
+  <NewsTeaser />
+  <WaveDivider from="--light-bg" to="--dark-bg" />
+  <PortsPreview />
+</Layout>
+
+<style is:global>
+  .wave-wrap + .services,
+  .wave-wrap + .stats { position: relative; z-index: 0; margin-top: -4px; }
+</style>

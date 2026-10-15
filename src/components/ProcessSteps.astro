@@ -1,0 +1,66 @@
+---
+const steps = [
+  { number: "01", title: "Request", description: "Send your vessel, port, and ETA.", icon: "request" },
+  { number: "02", title: "Quote", description: "Receive an itemised quote with fixed prices.", icon: "quote" },
+  { number: "03", title: "Consolidate", description: "We source and pack everything together.", icon: "consolidate" },
+  { number: "04", title: "Deliver", description: "Get delivery alongside at your port, with documents.", icon: "deliver" },
+];
+---
+
+<section class="process" aria-labelledby="process-title" data-process>
+  <div class="process-heading">
+    <p class="eyebrow">How it works</p>
+    <h2 id="process-title">From request to delivery in four steps</h2>
+    <p>One clear process keeps your order moving from first message to a documented handover onboard.</p>
+  </div>
+
+  <ol class="step-list">
+    {steps.map((step, index) => (
+      <li class="step" style={`--step-delay: ${700 + index * 120}ms`}>
+        <span class="step-number">{step.number}</span>
+        <div class="step-marker">
+          {step.icon === "request" && (
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H12l-4 4v-4H5.5A1.5 1.5 0 0 1 4 14.5v-9Z" /><path d="m8 9 2 2 4-4" /></svg>
+          )}
+          {step.icon === "quote" && (
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6V3Z" /><path d="M14 3v4h4M9 12h6M9 16h6M9 8h2" /></svg>
+          )}
+          {step.icon === "consolidate" && (
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" /><path d="m4.5 7.5 7.5 4 7.5-4M12 21v-9.5" /></svg>
+          )}
+          {step.icon === "deliver" && (
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h12V6H3v11ZM15 10h3l3 3v4h-6v-7Z" /><path d="M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" /></svg>
+          )}
+        </div>
+        <h3>{step.title}</h3>
+        <p>{step.description}</p>
+      </li>
+    ))}
+  </ol>
+
+  <a class="btn btn-primary" href="/contact">Request a quote <span aria-hidden="true">-&gt;</span></a>
+</section>
+
+<style>
+  .process { padding: clamp(4rem, 7vw, 6rem) clamp(1.25rem, 5vw, 3rem) clamp(5rem, 8vw, 7rem); background: var(--light-bg); color: var(--light-text); }
+  .process-heading { max-width: 720px; margin: 0 0 4rem; }
+  .eyebrow { margin: 0 0 1rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h2 { max-width: 15ch; margin: 0; font-size: clamp(2.1rem, 5vw, 4rem); line-height: 1.05; letter-spacing: -0.05em; }
+  .process-heading > p:last-child { max-width: 580px; margin: 1.5rem 0 0; color: var(--light-muted); line-height: 1.7; }
+  .step-list { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; max-width: 1200px; margin: 0 auto; padding: 0; list-style: none; }
+  .step-list::before { position: absolute; top: 2.25rem; right: 12.5%; left: 12.5%; height: 1px; transform-origin: left; background: var(--light-border); content: ""; }
+  .step { position: relative; z-index: 1; text-align: left; }
+  .step-marker { display: grid; place-items: center; width: 4.5rem; height: 4.5rem; margin: 0 0 1rem; border: 1px solid var(--light-accent); border-radius: 1rem; background: var(--accent-soft); color: var(--light-accent); }
+  .step-number { display: block; margin-bottom: 0.5rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; }
+  svg { width: 1.4rem; height: 1.4rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
+  h3 { margin: 0 0 0.65rem; font-size: 1.35rem; }
+  .step > p { max-width: 210px; margin: 0; color: var(--light-muted); line-height: 1.6; }
+  @keyframes process-line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes process-step-in { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+  .process.in-view .step-list::before { animation: process-line var(--dur-slow) var(--ease) both; }
+  .process.in-view .step-marker { opacity: 0; animation: process-step-in var(--dur) var(--ease) var(--step-delay) both; }
+  @media (prefers-reduced-motion: reduce) { .process.in-view .step-list::before, .process.in-view .step-marker { opacity: 1; animation: none; transform: none; } }
+  .process > .btn { display: table; margin: 3.5rem auto 0; }
+  @media (max-width: 900px) { .step-list { grid-template-columns: repeat(2, 1fr); gap: 3rem 1.5rem; } .step-list::before { display: none; } }
+  @media (max-width: 600px) { .process-heading { margin-bottom: 3rem; } .step-list { grid-template-columns: 1fr; gap: 2.5rem; } }
+</style>

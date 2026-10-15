@@ -1,0 +1,49 @@
+---
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("news"))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const formatDate = (date: Date) => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+const categoryLabel = (category: string) => category.charAt(0).toUpperCase() + category.slice(1);
+---
+
+<section class="news-teaser" aria-labelledby="news-teaser-title">
+  <div class="teaser-inner">
+    <div class="teaser-heading">
+      <div>
+        <p class="eyebrow">News and insights</p>
+        <h2 id="news-teaser-title">Useful updates from the supply chain.</h2>
+      </div>
+      <a class="all-news" href="/news/">View all news <span aria-hidden="true">-&gt;</span></a>
+    </div>
+    <div class="teaser-grid">
+      {posts.map((post) => (
+        <article class="teaser-card" data-reveal>
+          <div class="teaser-meta"><span>{categoryLabel(post.data.category)}</span><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time></div>
+          <h3>{post.data.title}</h3>
+          <p>{post.data.summary}</p>
+          <a class="read-more" href={`/news/${post.id}`} aria-label={`Read more: ${post.data.title}`}>Read more <span aria-hidden="true">-&gt;</span></a>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .news-teaser { padding: clamp(5rem, 9vw, 8rem) clamp(1.25rem, 5vw, 3rem); background: var(--light-bg); color: var(--light-text); }
+  .teaser-inner { max-width: 1200px; margin: 0 auto; }
+  .teaser-heading { display: flex; justify-content: space-between; gap: 2rem; align-items: end; margin-bottom: 3rem; }
+  .eyebrow { margin: 0 0 1rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h2 { max-width: 650px; margin: 0; font-size: clamp(2rem, 4vw, 3.8rem); line-height: 1.05; letter-spacing: -0.035em; }
+  .all-news, .read-more { color: var(--light-accent); font-weight: 700; text-underline-offset: 0.3rem; white-space: nowrap; }
+  .teaser-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .teaser-card { display: flex; min-height: 280px; flex-direction: column; padding: 1.75rem; border: 1px solid var(--border); border-radius: 0.85rem; background: var(--surface); box-shadow: var(--shadow); transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .teaser-card:hover { transform: translateY(-4px); box-shadow: 0 1.5rem 3.5rem rgb(16 42 56 / 13%); }
+  .teaser-meta { display: flex; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: 0.78rem; }
+  .teaser-meta span { color: var(--light-accent); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .teaser-card h3 { margin: 2.5rem 0 1rem; font-size: 1.45rem; line-height: 1.1; }
+  .teaser-card p { margin: 0; color: var(--muted); line-height: 1.6; }
+  .read-more { display: inline-flex; gap: 0.45rem; align-items: center; margin-top: auto; padding-top: 2rem; }
+  @media (max-width: 760px) { .teaser-heading { align-items: flex-start; flex-direction: column; } .teaser-grid { grid-template-columns: 1fr; } .teaser-card { min-height: 0; } }
+</style>

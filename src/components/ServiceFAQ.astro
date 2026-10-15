@@ -1,0 +1,44 @@
+---
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  faqs: FAQ[];
+}
+
+const { faqs } = Astro.props;
+---
+
+<section class="service-faq" aria-labelledby="service-faq-title">
+  <p class="eyebrow">Common questions</p>
+  <h2 id="service-faq-title">Frequently asked questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary>{faq.question}</summary>
+        <div class="faq-answer"><p>{faq.answer}</p></div>
+      </details>
+    ))}
+  </div>
+  <a class="faq-contact" href="/contact">Have another question? Contact our team <span aria-hidden="true">&rarr;</span></a>
+</section>
+
+<style>
+  .service-faq { padding: clamp(4rem, 8vw, 7rem) 0 0; }
+  .eyebrow { margin: 0 0 0.75rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  h2 { margin: 0 0 2rem; font-size: clamp(2rem, 4vw, 3.5rem); letter-spacing: -0.05em; }
+  .faq-list { border-top: 1px solid var(--light-border); }
+  .faq-item { border-bottom: 1px solid var(--light-border); }
+  .faq-item summary { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: 1.35rem 2.5rem 1.35rem 0; cursor: pointer; list-style: none; font-size: clamp(1.05rem, 2vw, 1.25rem); font-weight: 700; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { position: absolute; top: 50%; right: 0; color: var(--light-accent); content: "+"; font-size: 1.6rem; font-weight: 400; line-height: 1; transform: translateY(-50%); transition: transform var(--dur-fast) var(--ease); }
+  .faq-item[open] summary { color: var(--light-accent); }
+  .faq-item[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+  .faq-answer { padding: 0 2.5rem 1.35rem 0; }
+  .faq-answer p { max-width: 700px; margin: 0; color: var(--light-muted); line-height: 1.7; }
+  .faq-contact { display: inline-flex; gap: 0.4rem; align-items: center; margin-top: 2rem; color: var(--light-accent); font-weight: 700; text-underline-offset: 0.25rem; }
+  .faq-contact span { transition: transform var(--dur-fast) var(--ease); }
+  .faq-contact:hover span, .faq-contact:focus-visible span { transform: translateX(4px); }
+</style>

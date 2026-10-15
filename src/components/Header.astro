@@ -1,0 +1,192 @@
+---
+import { site } from "../config.js";
+import { services } from "../data/services.js";
+const currentPath = Astro.url.pathname;
+const isServicesSection = currentPath.startsWith("/services");
+const isCurrent = (path: string) => currentPath === path || (path === "/services" && isServicesSection);
+---
+<header transition:persist>
+  <a class:list={["logo", { active: isCurrent("/") }]} href="/" aria-current={isCurrent("/") ? "page" : undefined}>{site.name}</a>
+  <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-navigation">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="site-navigation" class="site-nav" aria-label="Main navigation">
+    <div class="dropdown">
+      <button class:list={["dropdown-trigger", { active: isServicesSection }]} type="button" aria-haspopup="true" aria-expanded="false" aria-controls="service-links">Services</button>
+      <div class="menu" id="service-links">
+        <div class="menu-grid">
+          {services.map((service) => (
+            <a class="service-link" href={`/services/${service.slug}`} aria-current={currentPath === `/services/${service.slug}` ? "page" : undefined}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" /><path d="m4.5 7.5 7.5 4 7.5-4M12 21v-9.5" /></svg>
+              <span><strong>{service.title}</strong><small>{service.summary}</small></span>
+            </a>
+          ))}
+        </div>
+        <a class="view-all" href="/services" aria-current={currentPath === "/services" ? "page" : undefined}>View all services <span aria-hidden="true">-&gt;</span></a>
+      </div>
+    </div>
+    <a class:list={["nav-link", { active: isCurrent("/ports") }]} href="/ports" aria-current={isCurrent("/ports") ? "page" : undefined}>Ports</a>
+    <a class:list={["nav-link", { active: isCurrent("/about") }]} href="/about" aria-current={isCurrent("/about") ? "page" : undefined}>About</a>
+    <a class:list={["nav-link", { active: isCurrent("/news") }]} href="/news" aria-current={isCurrent("/news") ? "page" : undefined}>News</a>
+    <a class="btn btn-primary cta" href="/contact" aria-current={isCurrent("/contact") ? "page" : undefined}>Request a quote</a>
+  </nav>
+</header>
+
+<script>
+  function updateActiveNavigation() {
+    const currentPath = window.location.pathname;
+    const header = document.querySelector<HTMLElement>("header");
+    if (!header) return;
+    const isServicesSection = currentPath.startsWith("/services");
+    const logo = header.querySelector<HTMLAnchorElement>(".logo");
+    const dropdownTrigger = header.querySelector<HTMLButtonElement>(".dropdown-trigger");
+
+    logo?.classList.toggle("active", currentPath === "/");
+    if (logo) {
+      if (currentPath === "/") logo.setAttribute("aria-current", "page");
+      else logo.removeAttribute("aria-current");
+    }
+    dropdownTrigger?.classList.toggle("active", isServicesSection);
+
+    header.querySelectorAll<HTMLAnchorElement>("#site-navigation a").forEach((link) => {
+      const path = new URL(link.href, window.location.href).pathname;
+      const active = path === currentPath || (path === "/services" && isServicesSection);
+      link.classList.toggle("active", active);
+      if (active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
+  function initHeader() {
+    const header = document.querySelector<HTMLElement>("header");
+    const menuToggle = header?.querySelector<HTMLButtonElement>(".menu-toggle");
+    const siteNavigation = header?.querySelector<HTMLElement>("#site-navigation");
+    const dropdown = header?.querySelector<HTMLElement>(".dropdown");
+    const dropdownTrigger = header?.querySelector<HTMLButtonElement>(".dropdown-trigger");
+    const navigationLinks = header?.querySelectorAll<HTMLAnchorElement>("#site-navigation a");
+    const mobileBreakpoint = window.matchMedia("(max-width: 767px)");
+
+    updateActiveNavigation();
+    if (!header || !menuToggle || !siteNavigation || !dropdown || !dropdownTrigger || !navigationLinks) return;
+
+    function closeNavigation() {
+      siteNavigation!.classList.remove("is-open");
+      menuToggle!.setAttribute("aria-expanded", "false");
+      menuToggle!.setAttribute("aria-label", "Open navigation");
+    }
+
+    function closeServices(returnFocus = false) {
+      dropdown!.classList.remove("is-open");
+      dropdownTrigger!.setAttribute("aria-expanded", "false");
+      if (returnFocus) dropdownTrigger!.focus();
+    }
+
+    closeNavigation();
+    closeServices();
+    if (header.dataset.controlsInitialized === "true") return;
+    header.dataset.controlsInitialized = "true";
+
+    menuToggle.addEventListener("click", () => {
+      const isOpen = siteNavigation.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+      menuToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+    });
+
+    dropdownTrigger.addEventListener("click", () => {
+      const isOpen = dropdown.classList.toggle("is-open");
+      dropdownTrigger.setAttribute("aria-expanded", String(isOpen));
+    });
+    dropdown.addEventListener("mouseenter", () => dropdownTrigger.setAttribute("aria-expanded", "true"));
+    dropdown.addEventListener("mouseleave", () => {
+      if (!dropdown.contains(document.activeElement)) dropdownTrigger.setAttribute("aria-expanded", "false");
+    });
+    dropdown.addEventListener("focusout", () => {
+      requestAnimationFrame(() => {
+        if (!dropdown.contains(document.activeElement)) dropdownTrigger.setAttribute("aria-expanded", "false");
+      });
+    });
+    dropdownTrigger.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        dropdownTrigger.click();
+      }
+    });
+    navigationLinks.forEach((link) => link.addEventListener("click", closeNavigation));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeNavigation();
+        closeServices();
+        (mobileBreakpoint.matches ? menuToggle : dropdownTrigger).focus();
+      }
+    });
+    mobileBreakpoint.addEventListener("change", () => {
+      closeNavigation();
+      closeServices();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initHeader);
+  document.addEventListener("astro:page-load", initHeader);
+  document.addEventListener("astro:after-swap", updateActiveNavigation);
+</script>
+
+<style>
+  header { position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; max-width: 1440px; margin: 0 auto; padding: 0.9rem clamp(1.25rem, 4vw, 4rem); border-bottom: 1px solid color-mix(in srgb, var(--dark-border) 80%, transparent); background: color-mix(in srgb, var(--dark-bg) 92%, transparent); backdrop-filter: blur(16px); transition: padding-top 200ms var(--ease), padding-bottom 200ms var(--ease), box-shadow 200ms var(--ease); }
+  .logo { transform: scale(1); transform-origin: left center; font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; color: var(--dark-text); text-decoration: none; transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .logo:hover, .logo:focus-visible { color: var(--accent-hover); }
+  .site-nav { display: flex; gap: 0.25rem; align-items: center; font-size: 0.92rem; }
+  .site-nav a, .dropdown-trigger { position: relative; text-decoration: none; color: color-mix(in srgb, var(--dark-text) 82%, transparent); }
+  .nav-link, .dropdown-trigger { display: inline-flex; align-items: center; min-height: 2.6rem; padding: 0.45rem 0.75rem; border-radius: 0.45rem; font-weight: 600; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+  .dropdown-trigger { gap: 0.45rem; }
+  .dropdown-trigger::before { width: 0.4rem; height: 0.4rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-0.1rem) rotate(45deg); content: ""; transition: transform var(--dur-fast) var(--ease); }
+  .dropdown.is-open .dropdown-trigger::before, .dropdown:hover .dropdown-trigger::before { transform: translateY(0.1rem) rotate(225deg); }
+  .nav-link::after, .dropdown-trigger::after { position: absolute; right: 0.75rem; bottom: 0.2rem; left: 0.75rem; height: 2px; transform: scaleX(0); transform-origin: left; border-radius: 999px; background: var(--accent); content: ""; transition: transform var(--dur-fast) var(--ease); }
+  .nav-link:hover, .nav-link:focus-visible, .dropdown-trigger:hover, .dropdown-trigger:focus-visible, .nav-link.active, .dropdown-trigger.active { color: var(--dark-text); background: color-mix(in srgb, var(--dark-surface) 72%, transparent); }
+  .nav-link:hover::after, .nav-link:focus-visible::after, .dropdown-trigger:hover::after, .dropdown-trigger:focus-visible::after, .nav-link.active::after, .dropdown-trigger.active::after { transform: scaleX(1); }
+  .site-nav a.cta, .site-nav a.cta:visited { background: var(--accent); color: var(--dark-bg); }
+  .site-nav a.cta:hover, .site-nav a.cta:focus-visible { background: var(--accent-hover); color: var(--dark-bg); }
+  .cta { min-height: 2.65rem; margin-left: 0.5rem; padding: 0.55rem 1.1rem; border-radius: 0.45rem; font-weight: 700; transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), filter var(--dur-fast) var(--ease); }
+  .cta:hover { transform: translateY(-2px); box-shadow: 0 0.75rem 1.5rem rgb(34 193 173 / 22%); }
+  .dropdown { padding-block: 1.25rem; margin-block: -1.25rem; }
+  .dropdown-trigger { padding: 0; border: 0; background: transparent; cursor: pointer; font: inherit; }
+  .menu { position: absolute; top: 100%; right: 0; display: flex; visibility: hidden; width: min(720px, calc(100vw - 2rem)); max-width: 100%; box-sizing: border-box; flex-direction: column; padding: 1rem 1.25rem 1.25rem; transform: translateY(-4px); opacity: 0; pointer-events: none; background: var(--dark-surface); border: 1px solid var(--dark-border); border-radius: 10px; box-shadow: 0 1rem 2rem var(--dark-bg); z-index: 2; transition: opacity 150ms ease, visibility 0s linear 150ms, transform 150ms ease; }
+  .menu::before { position: absolute; top: -12px; right: 0; left: 0; height: 12px; content: ""; }
+  .dropdown:hover .menu, .dropdown:focus-within .menu, .dropdown.is-open .menu { visibility: visible; transform: translateY(0); opacity: 1; pointer-events: auto; transition-delay: 0s; }
+  .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .service-link { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.75rem; border-radius: 6px; }
+  .service-link:hover { background: var(--dark-border); }
+  .service-link svg { flex: 0 0 1.25rem; width: 1.25rem; height: 1.25rem; margin-top: 0.15rem; fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
+  .service-link strong, .service-link small { display: block; }
+  .service-link strong { color: var(--dark-text); }
+  .service-link small { margin-top: 0.3rem; color: var(--dark-text); opacity: 0.72; font-size: 0.75rem; line-height: 1.4; }
+  .view-all { margin-top: 0.75rem; padding: 0.75rem 0.75rem 0; border-top: 1px solid var(--dark-border); color: var(--accent) !important; font-weight: 700; }
+  .menu-toggle { display: none; padding: 0.55rem; border: 1px solid var(--dark-border); border-radius: 0.45rem; background: color-mix(in srgb, var(--dark-surface) 70%, transparent); color: var(--dark-text); cursor: pointer; transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+  .menu-toggle:hover, .menu-toggle:focus-visible { border-color: var(--accent); background: var(--dark-surface); }
+  .menu-toggle span { display: block; width: 1.3rem; height: 2px; margin: 3px; background: currentColor; }
+
+  @media (max-width: 900px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .menu-grid { grid-template-columns: 1fr; } }
+
+  @media (max-width: 767px) {
+    header { flex-wrap: wrap; gap: 1rem; }
+    .menu-toggle { display: block; }
+    .site-nav { display: none; flex-basis: 100%; align-items: stretch; flex-direction: column; gap: 0.25rem; margin: 0 calc(clamp(1.25rem, 4vw, 4rem) * -1); padding: 0.9rem clamp(1.25rem, 4vw, 4rem) 1.35rem; border-top: 1px solid var(--dark-border); background: var(--dark-surface); box-shadow: 0 1.5rem 2rem rgb(0 0 0 / 18%); }
+    .site-nav.is-open { display: flex; }
+    .site-nav > a, .dropdown > .dropdown-trigger { width: 100%; min-height: 3rem; padding: 0.75rem 0.85rem; border-radius: 0.45rem; }
+    .site-nav > a:not(.cta):hover, .site-nav > a:not(.cta):focus-visible, .dropdown > .dropdown-trigger:hover, .dropdown > .dropdown-trigger:focus-visible { background: color-mix(in srgb, var(--dark-border) 50%, transparent); }
+    .nav-link::after, .dropdown-trigger::after { right: 0.85rem; bottom: 0.35rem; left: 0.85rem; }
+    .dropdown { display: flex; flex-direction: column; padding-block: 0; margin-block: 0; }
+    .menu { position: static; display: none; width: 100%; max-width: 100%; min-width: 0; padding: 0 0 0.5rem 1rem; transform: none; border: 0; background: transparent; box-shadow: none; }
+    .dropdown:hover .menu { display: none; }
+    .dropdown:focus-within .menu, .dropdown.is-open .menu { display: flex; }
+    .menu-grid { grid-template-columns: 1fr; }
+    .service-link { padding: 0.6rem 0; }
+    .view-all { padding-left: 0; }
+    .cta { width: 100%; margin-top: 0.5rem; margin-left: 0; text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    header, .logo, .menu, .nav-link::after, .dropdown-trigger::after, .cta { transition: none; }
+    .cta:hover { transform: none; box-shadow: none; filter: none; }
+  }
+</style>

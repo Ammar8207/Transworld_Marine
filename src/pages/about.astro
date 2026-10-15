@@ -1,0 +1,80 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { stats } from "../config.js";
+
+const values = [
+  { title: "Reliability", text: "We keep our promises, communicate early, and make every delivery detail visible to your team." },
+  { title: "Safety", text: "We treat food quality, product specifications, and safe handover as non-negotiable on every order." },
+  { title: "Transparency", text: "Clear pricing, practical advice, and straightforward updates keep decisions easy from quote to delivery." },
+];
+
+const certifications = ["ISO 9001", "ISO 22000", "HACCP", "ISSA member"];
+
+const team = [
+  { name: "Maya Chen", role: "Managing Director" },
+  { name: "Owen Carter", role: "Operations Lead" },
+  { name: "Nadia Rahman", role: "Port Services Manager" },
+];
+---
+
+<Layout title="About" description="Meet Transworld Marine, a practical ship supply partner built around dependable service and clear communication.">
+  <main class="about-page">
+    <section class="story" aria-labelledby="story-title">
+      <p class="eyebrow">About Transworld Marine</p>
+      <h1 id="story-title">Supply should be the steady part of the voyage.</h1>
+      <div class="story-copy">
+        <p>Transworld Marine began with a simple observation: vessel teams spend too much time chasing everyday essentials across fragmented port networks. We built a more dependable way to source provisions, stores, and the delivery support that connects them.</p>
+        <p>Today, our operations team works alongside crews, owners, and port agents across {stats.locations} locations and {stats.ports} ports, backed by {stats.years} years of experience. We stay close to the practical details because a well-timed delivery gives the people onboard one less thing to worry about.</p>
+      </div>
+    </section>
+
+    <section class="values" aria-labelledby="values-title">
+      <div class="section-heading"><p class="eyebrow">How we work</p><h2 id="values-title">Good supply starts with good habits.</h2></div>
+      <div class="value-grid">
+        {values.map((value) => <article><h3>{value.title}</h3><p>{value.text}</p></article>)}
+      </div>
+    </section>
+
+    <section class="certifications" aria-labelledby="certifications-title">
+      <div class="section-heading"><p class="eyebrow">Standards we respect</p><h2 id="certifications-title">Built for accountable operations.</h2></div>
+      <div class="certification-grid">
+        {certifications.map((certification) => <div class="badge">{certification}</div>)}
+      </div>
+    </section>
+
+    <section class="team" aria-labelledby="team-title">
+      <div class="section-heading"><p class="eyebrow">The people behind the delivery</p><h2 id="team-title">A small team with a wide view.</h2></div>
+      <div class="team-grid">
+        {team.map((member) => <article class="team-card"><div class="avatar" role="img" aria-label={`${member.name} avatar placeholder`}></div><h3>{member.name}</h3><p>{member.role}</p></article>)}
+      </div>
+    </section>
+
+    <section class="cta" aria-labelledby="cta-title">
+      <div><p class="eyebrow">Let us help</p><h2 id="cta-title">Make the next port call simpler.</h2></div>
+      <a class="btn btn-primary" href="/contact">Talk to our team <span aria-hidden="true">-&gt;</span></a>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .about-page { max-width: 1180px; margin: 0 auto; padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 5vw, 3rem); }
+  .story { padding-bottom: clamp(4rem, 9vw, 8rem); border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1.25rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h1 { max-width: 900px; margin: 0; font-size: clamp(2.8rem, 7vw, 6.5rem); line-height: 0.98; letter-spacing: -0.045em; }
+  .story-copy { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(2rem, 8vw, 8rem); max-width: 900px; margin: 3rem 0 0 auto; }
+  .story-copy p, .value-grid p, .team-card p { margin: 0; color: var(--muted); line-height: 1.7; }
+  section:not(.story) { padding-top: clamp(4rem, 9vw, 8rem); }
+  .section-heading { max-width: 600px; margin-bottom: 3rem; }
+  h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.05; letter-spacing: -0.035em; }
+  h3 { margin: 0 0 1rem; font-size: 1.5rem; }
+  .value-grid, .certification-grid, .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .value-grid article, .team-card { padding: 1.75rem; border: 1px solid var(--border); background: var(--surface); }
+  .certification-grid { grid-template-columns: repeat(4, 1fr); }
+  .badge { display: grid; min-height: 130px; place-items: center; border: 1px solid var(--border); color: var(--muted); text-align: center; font-weight: 700; }
+  .team { border-top: 1px solid var(--border); }
+  .avatar { height: 190px; margin: -1.75rem -1.75rem 1.5rem; background: var(--border); }
+  .team-card h3 { margin-bottom: 0.35rem; }
+  .cta { display: flex; justify-content: space-between; align-items: end; gap: 2rem; border-top: 1px solid var(--border); }
+  .cta a { white-space: nowrap; }
+  @media (max-width: 700px) { .story-copy, .value-grid, .team-grid { grid-template-columns: 1fr; } .certification-grid { grid-template-columns: repeat(2, 1fr); } .cta { align-items: flex-start; flex-direction: column; } .cta a { white-space: normal; } }
+</style>

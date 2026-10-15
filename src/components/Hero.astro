@@ -1,0 +1,116 @@
+---
+import { stats } from "../config.js";
+---
+
+<section class="hero" aria-labelledby="hero-title" transition:animate="none">
+  <div class="hero-main">
+    <div class="hero-content">
+      <p class="eyebrow">Ship supply, without the guesswork</p>
+      <h1 id="hero-title">Everything your vessel needs, delivered with precision.</h1>
+      <p class="intro">From fresh provisions to technical stores, Transworld Marine keeps your crew supplied and your schedule moving across every call.</p>
+      <div class="actions">
+        <a class="btn btn-primary" data-primary-cta href="/contact">Request a quote</a>
+        <a class="btn btn-secondary" data-primary-cta href="#services">Our services</a>
+      </div>
+    </div>
+    <div class="hero-media">
+      <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="/images/hero-poster.webp" aria-hidden="true">
+        <source src="/videos/hero.mp4" type="video/mp4" />
+      </video>
+      <div class="media-overlay" aria-hidden="true"></div>
+      <div class="hub-card"><strong>{stats.locations} locations</strong><span>{stats.ports} ports</span></div>
+    </div>
+  </div>
+  <section class="trust-strip" aria-label="Industry standards and memberships">
+    <span>ISO 9001</span><i aria-hidden="true"></i><span>ISO 22000</span><i aria-hidden="true"></i><span>HACCP</span><i aria-hidden="true"></i><span>ISSA member</span>
+  </section>
+</section>
+
+<script>
+  function initHeroVideo() {
+    const heroVideo = document.querySelector<HTMLVideoElement>(".hero-video");
+    const heroSource = heroVideo?.querySelector<HTMLSourceElement>("source");
+    const originalSource = heroSource?.getAttribute("src") ?? "";
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (!heroVideo || !heroSource || !originalSource || heroVideo.dataset.initialized === "true") return;
+    heroVideo.dataset.initialized = "true";
+    const video = heroVideo;
+    const source = heroSource;
+
+    function showPosterOnly() {
+      video.pause();
+      video.classList.add("poster-only");
+      video.classList.remove("video-ready");
+    }
+
+    function updateVideoMode() {
+      const posterOnly = mobileQuery.matches || reducedMotionQuery.matches;
+      if (posterOnly) {
+        showPosterOnly();
+        if (mobileQuery.matches && source.getAttribute("src")) {
+          source.removeAttribute("src");
+          video.load();
+        }
+        return;
+      }
+
+      if (!source.getAttribute("src")) {
+        source.setAttribute("src", originalSource);
+        video.load();
+      }
+      video.classList.remove("poster-only");
+    }
+
+    video.addEventListener("canplay", () => video.classList.add("video-ready"));
+    video.addEventListener("error", () => {
+      if (source.getAttribute("src")) video.style.display = "none";
+    });
+    mobileQuery.addEventListener("change", updateVideoMode);
+    reducedMotionQuery.addEventListener("change", updateVideoMode);
+    updateVideoMode();
+
+    fetch(video.poster, { method: "HEAD" }).then((response) => {
+      if (!response.ok && video.classList.contains("poster-only")) video.style.display = "none";
+    }).catch(() => {
+      if (video.classList.contains("poster-only")) video.style.display = "none";
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initHeroVideo);
+  document.addEventListener("astro:page-load", initHeroVideo);
+</script>
+
+<style>
+  .hero { background: var(--dark-bg); color: var(--dark-text); }
+  .hero-main { display: grid; grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr); gap: clamp(2.5rem, 7vw, 7rem); align-items: center; max-width: 1280px; min-height: min(760px, 80vh); margin: 0 auto; padding: clamp(5rem, 8vw, 7rem) clamp(1.25rem, 5vw, 3rem); }
+  .hero-content { max-width: 620px; }
+  .eyebrow { margin: 0 0 1.5rem; color: var(--accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  h1 { max-width: 13ch; margin: 0; font-size: clamp(2.7rem, 5.3vw, 5rem); line-height: 1.02; letter-spacing: -0.055em; }
+  .intro { max-width: 560px; margin: 1.75rem 0 0; color: var(--dark-text); opacity: 0.82; font-size: clamp(1.05rem, 2vw, 1.2rem); line-height: 1.6; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+  .hero-media { position: relative; min-height: 500px; overflow: visible; border-radius: 1.25rem; background: linear-gradient(135deg, var(--dark-surface), var(--dark-bg)); box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 24%); }
+  .hero-video, .media-overlay { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; }
+  .hero-video { display: block; object-fit: cover; opacity: 1; transition: opacity var(--dur) var(--ease); }
+  html.reveal-ready .hero-video:not(.poster-only):not(.video-ready) { opacity: 0; }
+  .hero-video.poster-only { opacity: 1; }
+  .media-overlay { background: linear-gradient(145deg, transparent 25%, var(--dark-bg)); opacity: 0.48; }
+  .hub-card { position: absolute; right: 1.25rem; bottom: -1.25rem; display: flex; gap: 0.75rem; align-items: baseline; padding: 1.1rem 1.25rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.75rem; background: var(--dark-surface); color: var(--dark-text); box-shadow: 0 1rem 2rem rgb(0 0 0 / 28%); backdrop-filter: blur(12px); }
+  .hub-card strong { color: var(--accent); font-size: 1.35rem; }
+  .hub-card span { opacity: 0.82; }
+  .trust-strip { display: flex; justify-content: center; align-items: center; gap: clamp(1rem, 4vw, 3rem); max-width: 1200px; margin: 0 auto; padding: 1.25rem clamp(1.25rem, 5vw, 3rem); border-top: 1px solid rgba(255, 255, 255, 0.12); color: var(--dark-text); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .trust-strip i { width: 1px; height: 1rem; background: var(--dark-border); }
+  @keyframes hero-fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes hero-media-in { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: scale(1); } }
+  @keyframes hero-card-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .hero-content > .eyebrow, .hero-content > h1, .hero-content > .intro, .hero-content > .actions { opacity: 0; animation: hero-fade-up var(--dur) var(--ease) both; }
+  .hero-content > .eyebrow { animation-delay: 0ms; }
+  .hero-content > h1 { animation-delay: 80ms; }
+  .hero-content > .intro { animation-delay: 160ms; }
+  .hero-content > .actions { animation-delay: 240ms; }
+  .hero-media { animation: hero-media-in var(--dur-slow) var(--ease) both; }
+  .hub-card { animation: hero-card-in var(--dur) var(--ease) 500ms both; }
+  @media (prefers-reduced-motion: reduce) { .hero-content > .eyebrow, .hero-content > h1, .hero-content > .intro, .hero-content > .actions, .hero-media, .hub-card { opacity: 1; animation: none; transform: none; } }
+  @media (max-width: 767px) { .hero-main { grid-template-columns: 1fr; min-height: 0; padding-top: 4rem; padding-bottom: 4rem; } .hero-media { min-height: 300px; } .hub-card { right: 1rem; bottom: -1rem; } .trust-strip { flex-wrap: wrap; gap: 0.75rem 1rem; padding-top: 1rem; padding-bottom: 1rem; } }
+</style>

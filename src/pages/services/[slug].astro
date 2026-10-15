@@ -1,0 +1,128 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { services } from "../../data/services.js";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import RelatedServices from "../../components/RelatedServices.astro";
+import ServiceFAQ from "../../components/ServiceFAQ.astro";
+
+export function getStaticPaths() {
+  return services.map((service) => ({
+    params: { slug: service.slug },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+const serviceIndex = services.findIndex((item) => item.slug === service.slug);
+const serviceNumber = String(serviceIndex + 1).padStart(2, "0");
+const crumbs = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: service.title },
+];
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: crumbs.map((crumb, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: crumb.label,
+    item: new URL(crumb.href ?? Astro.url.pathname, Astro.site ?? Astro.url).href,
+  })),
+};
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: service.faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answer,
+    },
+  })),
+};
+---
+
+<Layout title={service.title} description={service.summary}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <main class="service-page">
+    <Breadcrumbs crumbs={crumbs} />
+    <section class="intro-section" aria-labelledby="service-title">
+      <div class="intro-copy">
+        <a class="back-link" href="/services"><span aria-hidden="true">&larr;</span> All services</a>
+        <p class="eyebrow">Ship supply service <span class="service-index">{serviceNumber}</span></p>
+        <h1 id="service-title">{service.title}</h1>
+        <p class="intro">{service.intro}</p>
+        <div class="intro-points">
+          <span>Clear communication</span>
+          <span>Port-call ready</span>
+          <span>Documented delivery</span>
+        </div>
+      </div>
+      <div class="service-banner-frame">
+        <img class="service-banner" src={service.image} alt={service.imageAlt} width="1200" height="400" loading="lazy" onerror="this.style.display='none'" />
+        <div class="banner-caption">Transworld Marine <span aria-hidden="true">&middot;</span> {service.title}</div>
+      </div>
+    </section>
+
+    <section class="features-section" aria-labelledby="features-title">
+      <div class="section-label">
+        <p class="eyebrow">At a glance</p>
+        <h2 id="features-title">What we supply</h2>
+      </div>
+      <ul>
+        {service.features.map((feature) => <li>{feature}</li>)}
+      </ul>
+    </section>
+
+    <ServiceFAQ faqs={service.faqs} />
+    <RelatedServices current={service.slug} />
+
+    <section class="service-cta" aria-labelledby="cta-title">
+      <div class="service-cta-content">
+        <p class="eyebrow">Ready when you are</p>
+        <h2 id="cta-title">Plan your next delivery with confidence.</h2>
+        <p>Tell us what your vessel needs and where it is calling, and our team will prepare the next step.</p>
+      </div>
+      <a class="btn btn-primary" href={`/contact?topic=${encodeURIComponent(service.title)}`}>Request a quote for {service.title} <span aria-hidden="true">-&gt;</span></a>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .service-page { max-width: 1280px; margin: 0 auto; padding: clamp(4rem, 8vw, 7rem) clamp(1.25rem, 5vw, 3rem); }
+  .intro-section { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 6vw, 6rem); align-items: end; padding-bottom: clamp(4rem, 8vw, 7rem); border-bottom: 1px solid var(--border); }
+  .intro-copy { padding-top: 1rem; }
+  .back-link { display: inline-flex; gap: 0.5rem; align-items: center; margin-bottom: 4rem; color: var(--light-accent); font-size: 0.9rem; font-weight: 700; text-underline-offset: 0.25rem; }
+  .back-link span { transition: transform var(--dur-fast) var(--ease); }
+  .back-link:hover span { transform: translateX(-4px); }
+  .eyebrow { margin: 0 0 1.25rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  .service-index { display: inline-block; margin-left: 0.75rem; padding-left: 0.75rem; border-left: 1px solid var(--border); color: var(--muted); }
+  .service-cta .eyebrow { color: var(--accent); }
+  h1 { margin: 0; font-size: clamp(3.5rem, 9vw, 8rem); line-height: 0.95; letter-spacing: -0.05em; }
+  .intro { max-width: 690px; margin: 2rem 0 0; color: var(--muted); font-size: clamp(1.1rem, 2vw, 1.35rem); line-height: 1.7; }
+  .intro-points { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2rem; }
+  .intro-points span { padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: 999px; color: var(--light-accent); font-size: 0.78rem; font-weight: 700; }
+  .service-banner-frame { position: relative; overflow: hidden; max-height: 420px; border-radius: 1rem; background: linear-gradient(135deg, var(--surface), var(--border)); box-shadow: var(--shadow); }
+  .service-banner-frame::after { position: absolute; inset: 0; background: linear-gradient(var(--dark-overlay), var(--dark-overlay)); content: ""; pointer-events: none; }
+  .service-banner { display: block; width: 100%; height: clamp(320px, 36vw, 420px); object-fit: cover; transition: transform var(--dur) var(--ease); }
+  .service-banner-frame:hover .service-banner { transform: scale(1.04); }
+  .banner-caption { position: absolute; right: 1rem; bottom: 1rem; left: 1rem; z-index: 1; color: var(--dark-text); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .banner-caption span { margin: 0 0.3rem; color: var(--accent); }
+  .features-section { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 3rem; padding: clamp(4rem, 9vw, 8rem) 0; border-bottom: 1px solid var(--border); }
+  h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); letter-spacing: -0.035em; }
+  ul { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; margin: 0; padding: 0; list-style: none; }
+  li { padding: 1.25rem 1rem 1.25rem 0; border-top: 1px solid var(--border); line-height: 1.45; }
+  li::before { content: "+"; display: inline-block; margin-right: 0.75rem; color: var(--light-accent); font-weight: 700; }
+  .service-cta { display: flex; justify-content: space-between; align-items: center; gap: 2rem; margin-top: clamp(4rem, 8vw, 7rem); padding: clamp(2rem, 5vw, 3.5rem); background: var(--dark-surface); border: 1px solid var(--dark-border); border-radius: 1rem; color: var(--dark-text); box-shadow: 0 1.5rem 3rem rgb(7 24 39 / 14%); }
+  .service-cta-content { max-width: 640px; }
+  .service-cta h2 { margin: 0; max-width: 590px; color: var(--dark-text); }
+  .service-cta-content > p:last-child { margin: 1rem 0 0; color: var(--dark-text); opacity: 0.82; line-height: 1.6; }
+  .service-cta > .btn { flex: 0 0 auto; white-space: nowrap; }
+  @media (max-width: 800px) { .intro-section { grid-template-columns: 1fr; gap: 2.5rem; } .back-link { margin-bottom: 3rem; } }
+  @media (max-width: 700px) { .features-section { grid-template-columns: 1fr; } ul { grid-template-columns: 1fr; } .service-cta { align-items: stretch; flex-direction: column; padding: 2rem; } .service-cta > a { width: 100%; text-align: center; } }
+</style>

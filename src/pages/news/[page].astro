@@ -1,0 +1,30 @@
+---
+import type { GetStaticPaths, Page } from "astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import NewsListing from "../../components/NewsListing.astro";
+
+export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
+  const posts = (await getCollection("news")).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  return paginate(posts, { pageSize: 6 });
+};
+
+const { page } = Astro.props as { page: Page<CollectionEntry<"news">> };
+const categories = ["all", "news", "insights", "press"];
+const selectedCategory = categories.includes(Astro.url.searchParams.get("category") ?? "")
+  ? Astro.url.searchParams.get("category") ?? "all"
+  : "all";
+const visiblePosts = selectedCategory === "all"
+  ? page.data
+  : page.data.filter((post) => post.data.category === selectedCategory);
+---
+
+<Layout title="News and Insights" description="News, market insights, and certification updates from Transworld Marine.">
+  <main class="news-page">
+    <NewsListing posts={visiblePosts} selectedCategory={selectedCategory} pagination={page} />
+  </main>
+</Layout>
+
+<style>
+  .news-page { max-width: 1180px; margin: 0 auto; padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 5vw, 3rem); }
+</style>

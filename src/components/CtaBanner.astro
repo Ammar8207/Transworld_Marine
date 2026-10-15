@@ -1,0 +1,23 @@
+<section class="cta-banner" aria-labelledby="cta-title">
+  <div class="cta-inner" data-reveal>
+    <div class="cta-content">
+      <p class="eyebrow">Ready when you are</p>
+      <h2 id="cta-title">Talk to an expert</h2>
+      <p>Tell us where your vessel is calling and we will help coordinate what comes next.</p>
+    </div>
+    <div class="cta-actions">
+      <a class="btn btn-primary" href="/contact">Request a quote</a>
+      <a class="btn btn-secondary" href="/ports">View ports</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-banner { width: 100%; padding: clamp(4rem, 7vw, 6rem) 1.25rem; background: var(--dark-surface); color: var(--dark-text); border-top: 1px solid var(--dark-border); }
+  .cta-inner { display: flex; justify-content: space-between; align-items: center; gap: 3rem; max-width: 1200px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid var(--dark-border); border-radius: 1rem; background: color-mix(in srgb, var(--dark-bg) 45%, transparent); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  h2 { margin: 0; font-size: clamp(2.2rem, 5vw, 4.5rem); letter-spacing: -0.05em; }
+  .cta-content > p:last-child { max-width: 520px; margin: 1.25rem 0 0; color: var(--dark-text); opacity: 0.82; line-height: 1.6; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  @media (max-width: 700px) { .cta-inner { align-items: flex-start; flex-direction: column; } }
+</style>

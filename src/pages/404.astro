@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Page not found" description="The page you requested could not be found.">
+  <main class="not-found">
+    <p class="eyebrow">404</p>
+    <h1>That page has left the quay.</h1>
+    <p>The address may be out of date, but the rest of Transworld Marine is still here.</p>
+    <a class="btn btn-primary" href="/">Return home <span aria-hidden="true">-&gt;</span></a>
+  </main>
+</Layout>
+
+<style>
+  .not-found { max-width: 800px; margin: 0 auto; padding: clamp(7rem, 16vw, 12rem) 1.25rem; }
+  .eyebrow { margin: 0 0 1.25rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(3rem, 8vw, 7rem); line-height: 0.95; letter-spacing: -0.05em; }
+  p:not(.eyebrow) { max-width: 520px; margin: 2rem 0; color: var(--muted); font-size: 1.15rem; line-height: 1.7; }
+</style>

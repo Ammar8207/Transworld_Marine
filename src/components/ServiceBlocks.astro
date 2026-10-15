@@ -1,0 +1,51 @@
+---
+import { services } from "../data/services.js";
+---
+
+<section class="services" id="services" aria-labelledby="services-title">
+  <div class="section-heading">
+    <p class="eyebrow">What we handle</p>
+    <h2 id="services-title">Supply that works around your voyage.</h2>
+  </div>
+  <div class="service-list">
+    {services.map((service, index) => (
+      <article class:list={["service-row", { reverse: index % 2 === 1 }]} data-reveal>
+        <div class="image-frame">
+          <img src={service.image} alt={service.imageAlt} width="960" height="600" loading="lazy" onerror="this.style.display='none'" />
+        </div>
+        <div class="service-copy">
+          <p class="service-number">0{index + 1}</p>
+          <h3>{service.title}</h3>
+          <p>{service.intro}</p>
+          <a href={`/services/${service.slug}`}>Explore {service.title.toLowerCase()} <span aria-hidden="true">-&gt;</span></a>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .services { padding: clamp(5rem, 8vw, 7rem) clamp(1.25rem, 5vw, 3rem); background: var(--light-bg); color: var(--light-text); }
+  .section-heading, .service-list { max-width: 1200px; margin-right: auto; margin-left: auto; }
+  .section-heading { margin-bottom: 3.5rem; }
+  .eyebrow, .service-number { margin: 0 0 1rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h2 { max-width: 14ch; margin: 0; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1.02; letter-spacing: -0.05em; }
+  .service-list { display: grid; gap: 2rem; }
+  .service-row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: clamp(2rem, 7vw, 7rem); align-items: center; padding: clamp(1rem, 2vw, 1.5rem); background: var(--light-surface); border: 1px solid var(--light-border); border-radius: 1rem; box-shadow: var(--shadow); transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .service-row:hover { border-color: var(--light-accent); transform: translateY(-4px); box-shadow: 0 1.5rem 3.5rem rgb(16 42 56 / 13%); }
+  .service-row.reverse .image-frame { order: 2; }
+  .service-row.reverse .service-copy { order: 1; }
+  .image-frame { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: linear-gradient(135deg, var(--light-surface), var(--light-border)); border: 1px solid var(--light-border); border-radius: 0.65rem; }
+  .image-frame::after { position: absolute; inset: 0; z-index: 1; background: linear-gradient(var(--dark-overlay), var(--dark-overlay)); content: ""; pointer-events: none; }
+  .image-frame img { position: relative; z-index: 0; display: block; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur) var(--ease); }
+  .image-frame:hover img { transform: scale(1.04); }
+  .service-copy { max-width: 480px; }
+  .service-number { margin-bottom: 1.5rem; }
+  h3 { margin: 0; font-size: clamp(1.8rem, 3vw, 3rem); }
+  .service-copy > p:not(.service-number) { margin: 1.25rem 0 1.5rem; color: var(--light-muted); line-height: 1.7; }
+  .service-copy a { color: var(--light-text); font-weight: 700; text-decoration-color: var(--accent); text-underline-offset: 0.3rem; }
+  @media (max-width: 700px) {
+    .service-row, .service-row.reverse { grid-template-columns: 1fr; gap: 1.75rem; }
+    .service-row.reverse .image-frame, .service-row.reverse .service-copy { order: initial; }
+  }
+</style>

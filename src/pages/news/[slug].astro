@@ -1,0 +1,112 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("news");
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const allPosts = await getCollection("news");
+const relatedPosts = allPosts
+  .filter((candidate) => candidate.id !== post.id)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 2);
+const { Content } = await render(post);
+const formatDate = (date: Date) => date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+const categoryLabel = post.data.category.charAt(0).toUpperCase() + post.data.category.slice(1);
+const crumbs = [
+  { label: "Home", href: "/" },
+  { label: "News", href: "/news" },
+  { label: post.data.title },
+];
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: crumbs.map((crumb, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: crumb.label,
+    item: new URL(crumb.href ?? Astro.url.pathname, Astro.site ?? Astro.url).href,
+  })),
+};
+---
+
+<Layout title={post.data.title} description={post.data.summary} image={post.data.image} type="article">
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+  <main class="article-page">
+    <Breadcrumbs crumbs={crumbs} />
+    <article>
+      <header class="article-header">
+        <p class="eyebrow">{categoryLabel}</p>
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        <h1>{post.data.title}</h1>
+        {post.data.author && <p class="author">By {post.data.author}</p>}
+        {post.data.image && <img class="article-image" src={post.data.image} alt="" />}
+      </header>
+      <div class="article-body"><Content /></div>
+    </article>
+    <div class="article-actions">
+      <a class="back-link" href="/news/">&lt;- Back to news</a>
+    </div>
+  </main>
+  <section class="related-insights" aria-labelledby="related-insights-title">
+    <div class="related-insights-inner">
+      <p class="eyebrow">More from our insights</p>
+      <h2 id="related-insights-title">Useful updates from the supply chain.</h2>
+      <div class="insight-grid">
+        {relatedPosts.map((relatedPost) => (
+          <a class="insight-card" href={`/news/${relatedPost.id}`}>
+            <time datetime={relatedPost.data.date.toISOString()}>{formatDate(relatedPost.data.date)}</time>
+            <h3>{relatedPost.data.title}</h3>
+            <p>{relatedPost.data.summary}</p>
+            <span>Read more about this insight <span aria-hidden="true">&rarr;</span></span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+  <section class="article-cta" aria-labelledby="article-cta-title">
+    <div>
+      <p class="eyebrow">Keep the conversation moving</p>
+      <h2 id="article-cta-title">Have a question about your next port call?</h2>
+    </div>
+    <a class="btn btn-primary" href="/contact">Contact us <span aria-hidden="true">-&gt;</span></a>
+  </section>
+</Layout>
+
+<style>
+  .article-page { max-width: 900px; margin: 0 auto; padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 5vw, 3rem) 5rem; }
+  .article-header { padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { display: inline-block; margin: 0 1rem 1rem 0; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  time { color: var(--muted); font-size: 0.9rem; }
+  h1 { max-width: 850px; margin: 1.5rem 0 0; font-size: clamp(2.7rem, 7vw, 6rem); line-height: 0.98; letter-spacing: -0.045em; }
+  .author { margin: 1.5rem 0 0; color: var(--muted); }
+  .article-image { display: block; width: 100%; max-height: 480px; margin-top: 3rem; object-fit: cover; border-radius: 8px; }
+  .article-body { max-width: 720px; padding-top: 3rem; }
+  .article-body :global(p) { margin: 0 0 1.5rem; color: var(--muted); font-size: 1.1rem; line-height: 1.8; }
+  .article-actions { margin-top: 4rem; }
+  .back-link { color: var(--light-accent); font-weight: 700; text-underline-offset: 0.3rem; }
+  .related-insights { padding: 4rem max(1.25rem, calc((100% - 900px) / 2)); background: var(--light-bg); }
+  .related-insights-inner { max-width: 900px; margin: 0 auto; }
+  .related-insights h2 { max-width: 600px; margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); letter-spacing: -0.05em; }
+  .related-insights .eyebrow { margin-bottom: 0.75rem; }
+  .insight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .insight-card { display: flex; min-height: 250px; flex-direction: column; padding: 1.5rem; border: 1px solid var(--border); border-radius: 0.75rem; background: var(--surface); color: var(--light-text); text-decoration: none; box-shadow: 0 0.75rem 2rem rgb(16 42 56 / 5%); transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .insight-card:hover { transform: translateY(-3px); border-color: var(--light-accent); }
+  .insight-card time { color: var(--muted); font-size: 0.8rem; }
+  .insight-card h3 { margin: 2rem 0 0.75rem; font-size: 1.35rem; line-height: 1.15; }
+  .insight-card p { margin: 0; color: var(--muted); line-height: 1.55; }
+  .insight-card > span { margin-top: auto; padding-top: 1.5rem; color: var(--light-accent); font-weight: 700; }
+  .article-cta { display: flex; justify-content: space-between; align-items: end; gap: 2rem; padding: 4rem max(1.25rem, calc((100% - 900px) / 2)); background: var(--dark-surface); color: var(--dark-text); }
+  .article-cta .eyebrow { color: var(--accent); }
+  .article-cta h2 { max-width: 620px; margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.05; }
+  @media (max-width: 700px) { .insight-grid { grid-template-columns: 1fr; } .article-cta { align-items: flex-start; flex-direction: column; } }
+</style>

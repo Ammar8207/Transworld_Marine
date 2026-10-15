@@ -1,0 +1,121 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { site } from "../config.js";
+
+const topics = ["Provisions", "Stores", "Logistics", "General enquiry"];
+const requestedTopic = Astro.url.searchParams.get("topic");
+const selectedTopic = topics.includes(requestedTopic ?? "") ? requestedTopic : "";
+---
+
+<Layout title="Contact" description="Tell Transworld Marine what your vessel needs and where it is calling.">
+  <main class="contact-page">
+    <header class="page-heading">
+      <p class="eyebrow">Contact Transworld Marine</p>
+      <h1>Let us plan the next delivery.</h1>
+      <p>Tell us what your vessel needs and where it is calling. Our operations team will come back with a clear, practical response.</p>
+    </header>
+
+    <div class="contact-layout">
+      <form method="POST" action="https://formspree.io/f/YOUR_FORM_ID">
+        <div class="form-grid">
+          <div class="field">
+            <label for="name">Name <span aria-hidden="true">*</span></label>
+            <input id="name" name="name" type="text" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="company">Company <span aria-hidden="true">*</span></label>
+            <input id="company" name="company" type="text" autocomplete="organization" required />
+          </div>
+          <div class="field">
+            <label for="email">Email <span aria-hidden="true">*</span></label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label for="phone">Phone <span class="optional">(optional)</span></label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" />
+          </div>
+          <div class="field">
+            <label for="topic">Topic <span aria-hidden="true">*</span></label>
+            <select id="topic" name="topic" required>
+              <option value="" disabled selected={selectedTopic === ""}>Select a topic</option>
+              {topics.map((topic) => <option value={topic} selected={selectedTopic === topic}>{topic}</option>)}
+            </select>
+          </div>
+          <div class="field">
+            <label for="vessel">Vessel name <span class="optional">(optional)</span></label>
+            <input id="vessel" name="vessel" type="text" />
+          </div>
+          <div class="field full-width">
+            <label for="port">Port <span class="optional">(optional)</span></label>
+            <input id="port" name="port" type="text" placeholder="Port name or next call" />
+          </div>
+          <div class="field full-width">
+            <label for="message">Message <span aria-hidden="true">*</span></label>
+            <textarea id="message" name="message" rows="7" required></textarea>
+          </div>
+          <div class="honeypot" aria-hidden="true">
+            <label for="website">Leave this field blank</label>
+            <input id="website" name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+        </div>
+        <button class="submit-button" type="submit">Send enquiry <span aria-hidden="true">-&gt;</span></button>
+      </form>
+
+      <aside class="contact-details" aria-label="Office contact details">
+        <p class="eyebrow">The operations desk</p>
+        <h2>One point of contact, wherever you call.</h2>
+        <dl>
+          <div><dt>Email</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+          <div><dt>Office</dt><dd>{site.address}</dd></div>
+          <div><dt>Phone</dt><dd><a href={`tel:${site.phone.replace(/[^+\d]/g, "")}`}>{site.phone}</a></dd></div>
+        </dl>
+      </aside>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  function initContactTopic() {
+    const topicSelect = document.querySelector<HTMLSelectElement>("#topic");
+    if (!topicSelect || topicSelect.dataset.initialized === "true") return;
+    topicSelect.dataset.initialized = "true";
+    const requestedTopic = new URLSearchParams(window.location.search).get("topic");
+    if (requestedTopic && Array.from(topicSelect.options).some((option) => option.value === requestedTopic)) {
+      topicSelect.value = requestedTopic;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initContactTopic);
+  document.addEventListener("astro:page-load", initContactTopic);
+</script>
+
+<style>
+  .contact-page { max-width: 1180px; margin: 0 auto; padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 5vw, 3rem); }
+  .page-heading { max-width: 760px; margin-bottom: clamp(3rem, 7vw, 6rem); }
+  .eyebrow { margin: 0 0 1.25rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(2.6rem, 6vw, 5.5rem); line-height: 1; letter-spacing: -0.04em; }
+  .page-heading > p:last-child { max-width: 600px; margin: 2rem 0 0; color: var(--muted); font-size: 1.15rem; line-height: 1.7; }
+  .contact-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr); gap: clamp(3rem, 8vw, 8rem); align-items: start; }
+  form { padding: clamp(1.5rem, 4vw, 2.5rem); background: var(--surface); border: 1px solid var(--border); }
+  .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .full-width { grid-column: 1 / -1; }
+  label { color: var(--text); font-size: 0.9rem; }
+  label span { color: var(--light-accent); }
+  label .optional { color: var(--muted); }
+  input, select, textarea { width: 100%; padding: 0.85rem 0.9rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text); font: inherit; }
+  textarea { min-height: 150px; resize: vertical; }
+  input::placeholder { color: var(--muted); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, .submit-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .submit-button { margin-top: 1.5rem; padding: 0.9rem 1.2rem; border: 1px solid var(--accent); border-radius: 4px; background: var(--accent); color: var(--bg); cursor: pointer; font: inherit; font-weight: 700; }
+  .contact-details { padding-top: 0.25rem; }
+  .contact-details h2 { max-width: 360px; margin: 0; font-size: clamp(1.8rem, 3vw, 2.75rem); line-height: 1.1; letter-spacing: -0.03em; }
+  dl { margin: 3rem 0 0; }
+  dl div { padding: 1.25rem 0; border-top: 1px solid var(--border); }
+  dt { margin-bottom: 0.5rem; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  dd { margin: 0; line-height: 1.6; }
+  a { color: var(--text); text-decoration-color: var(--accent); text-underline-offset: 0.3rem; }
+  @media (max-width: 760px) { .contact-layout { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: auto; } }
+</style>

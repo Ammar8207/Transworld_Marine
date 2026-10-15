@@ -1,0 +1,40 @@
+---
+import { ports } from "../data/ports.js";
+
+interface Props {
+  region?: string;
+}
+
+const { region } = Astro.props;
+const matchingPorts = region ? ports.filter((port) => port.region === region) : [];
+const relatedPorts = (matchingPorts.length ? matchingPorts : ports).slice(0, 3);
+---
+
+<section class="related-ports" aria-labelledby="related-ports-title">
+  <p class="eyebrow">More ports</p>
+  <h2 id="related-ports-title">Support wherever your vessel calls.</h2>
+  <div class="port-grid">
+    {relatedPorts.map((port) => (
+      <article class="port-card">
+        <div>
+          <h3>{port.name}</h3>
+          <p>{port.country}</p>
+        </div>
+        <a href={`/contact?port=${encodeURIComponent(port.name)}`}>Request a quote <span aria-hidden="true">&rarr;</span></a>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .related-ports { margin-top: clamp(4rem, 8vw, 7rem); padding-top: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 0.75rem; color: var(--light-accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.25rem); letter-spacing: -0.05em; }
+  .port-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .port-card { display: flex; min-height: 150px; flex-direction: column; justify-content: space-between; padding: 1.25rem; border: 1px solid var(--light-border); border-radius: 0.5rem; background: var(--light-surface); box-shadow: 0 0.75rem 2rem rgb(16 42 56 / 5%); transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .port-card:hover { transform: translateY(-3px); border-color: var(--light-accent); box-shadow: var(--shadow); }
+  h3 { margin: 0; color: var(--light-text); font-size: 1.2rem; }
+  .port-card p { margin: 0.3rem 0 0; color: var(--light-muted); font-size: 0.9rem; }
+  .port-card a { margin-top: 1.25rem; color: var(--light-accent); font-size: 0.85rem; font-weight: 700; text-underline-offset: 0.25rem; }
+  @media (max-width: 700px) { .port-grid { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,24 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import NewsListing from "../../components/NewsListing.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("news")).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const categories = ["all", "news", "insights", "press"];
+const selectedCategory = categories.includes(Astro.url.searchParams.get("category") ?? "")
+  ? Astro.url.searchParams.get("category") ?? "all"
+  : "all";
+const visiblePosts = selectedCategory === "all"
+  ? posts.slice(0, 6)
+  : posts.filter((post) => post.data.category === selectedCategory).slice(0, 6);
+---
+
+<Layout title="News and Insights" description="News, market insights, and certification updates from Transworld Marine.">
+  <main class="news-page">
+    <NewsListing posts={visiblePosts} selectedCategory={selectedCategory} />
+  </main>
+</Layout>
+
+<style>
+  .news-page { max-width: 1180px; margin: 0 auto; padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 5vw, 3rem); }
+</style>

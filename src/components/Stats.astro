@@ -1,0 +1,81 @@
+---
+import { stats as siteStats } from "../config.js";
+
+const stats = [
+  { value: siteStats.ports, label: "Ports served" },
+  { value: siteStats.locations, label: "Locations" },
+  { value: siteStats.years, label: "Years of experience" },
+];
+---
+
+<section class="stats" aria-label="Transworld Marine at a glance" data-reveal>
+  <div class="stats-inner">
+    {stats.map((stat) => (
+      <div class="stat">
+        <strong data-count={stat.value}>{stat.value}</strong>
+        <span>{stat.label}</span>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .stats { padding: 4.5rem clamp(1.25rem, 5vw, 3rem); background: var(--dark-bg); color: var(--dark-text); }
+  .stats-inner { display: grid; grid-template-columns: repeat(3, 1fr); max-width: 1200px; margin: 0 auto; }
+  .stat { padding: 1rem clamp(1rem, 4vw, 3rem); border-left: 1px solid var(--dark-border); }
+  .stat:last-child { border-right: 1px solid var(--dark-border); }
+  strong, span { display: block; }
+  strong { color: var(--accent); font-size: clamp(3rem, 7vw, 6rem); line-height: 0.95; letter-spacing: -0.06em; }
+  span { margin-top: 0.75rem; color: var(--dark-text); font-size: 1rem; }
+  @media (max-width: 600px) { .stats-inner { grid-template-columns: 1fr; gap: 1.5rem; } .stat, .stat:last-child { border: 0; padding: 0; } }
+</style>
+
+<script>
+  function initStats() {
+    const statsSection = document.querySelector<HTMLElement>(".stats");
+    if (!statsSection || statsSection.dataset.initialized === "true") return;
+    statsSection.dataset.initialized = "true";
+    const counters = statsSection.querySelectorAll<HTMLElement>("[data-count]");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function showFinalValue(counter: HTMLElement) {
+      const value = counter.dataset.count;
+      if (!value) return;
+      counter.textContent = value;
+      counter.dataset.counted = "true";
+    }
+
+    function countUp(counter: HTMLElement) {
+      if (counter.dataset.counted === "true") return;
+      const target = Number(counter.dataset.count ?? 0);
+      const startTime = performance.now();
+      const duration = 900;
+      counter.textContent = "0";
+
+      function tick(currentTime: number) {
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        counter.textContent = String(Math.round(target * progress));
+        if (progress < 1) requestAnimationFrame(tick);
+        else counter.dataset.counted = "true";
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      counters.forEach(showFinalValue);
+    } else {
+      const counterObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          countUp(entry.target as HTMLElement);
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.4 });
+      counters.forEach((counter) => counterObserver.observe(counter));
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initStats);
+  document.addEventListener("astro:page-load", initStats);
+</script>

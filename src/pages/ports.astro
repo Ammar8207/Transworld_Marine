@@ -1,0 +1,335 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { ports } from "../data/ports.js";
+import { stats } from "../config.js";
+import RelatedPorts from "../components/RelatedPorts.astro";
+
+const regions = ["All", "Asia", "Middle East", "Europe", "Americas"];
+const regionCounts = regions.slice(1).map((region) => ({
+  name: region,
+  count: ports.filter((port) => port.region === region).length,
+}));
+const viewBoxWidth = 1200;
+const viewBoxHeight = 600;
+type Port = (typeof ports)[number];
+const projectPort = (port: Port) => ({
+  x: (port.lng + 180) * (viewBoxWidth / 360),
+  y: (90 - port.lat) * (viewBoxHeight / 180),
+});
+---
+
+<Layout title="Ports" description="Explore Transworld Marine's port network for provisions, stores, and marine logistics support.">
+  <main class="ports-page">
+    <header class="page-heading">
+      <p class="eyebrow">Our network</p>
+      <h1>Ready for your next port call.</h1>
+      <p>Find the {stats.ports} ports where our team can coordinate provisions, stores, and delivery support across {stats.locations} locations, backed by {stats.years} years of experience.</p>
+      <section class="network-summary" aria-label="Network highlights">
+        <span><strong>{stats.ports}</strong> ports served</span>
+        <span><strong>{stats.locations}</strong> locations</span>
+        <span><strong>{stats.years}</strong> years experience</span>
+      </section>
+    </header>
+
+    <section class="port-controls" aria-label="Search and filter ports">
+      <label class="search-label" for="port-search">Search ports</label>
+      <input id="port-search" class="search-input" type="search" placeholder="Search by port or country" autocomplete="off" />
+      <div class="filters" role="group" aria-label="Filter ports by region">
+        {regions.map((region, index) => (
+          <button class:list={{ active: index === 0 }} type="button" data-region-filter={region} aria-pressed={index === 0}>{region}</button>
+        ))}
+      </div>
+      <button class="reset-filters" type="button" data-reset-filters hidden>Reset filters</button>
+    </section>
+
+      <section class="map-section" aria-label="Available ports">
+        <div class="map-heading">
+          <div>
+            <p class="eyebrow">Global coverage</p>
+            <h2>One team, wherever your vessel calls.</h2>
+          </div>
+          <p>Select a marker to view port details and start a request.</p>
+        </div>
+        <div class="map-stage">
+          <svg class="world-map" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="World map showing port locations">
+            <path class="land" role="img" aria-label="Simplified world landmasses" d="M73 159 126 111l72-18 57 23 44-12 50 26-13 31-43 14-20 34-52-3-30 31-47-19-38-35-34-10 1-24Zm242 76 32 6 27 31-5 40-28 49-24-11 3-42-27-26 22-25Zm95-47 45-20 47 9 21 26-21 24-51-3-35-16-6-20Zm87-53 42-18 35 9 42-17 65 12 47 24 64 4 45 24 62-8 68 24 43 32-16 29-58-3-30 22-47-14-40 17-49-12-48 17-37-26-52 7-34-25-48 4-32-25-44-14-22-29Zm51 106 35 7 15 22-20 21-39-7-12-21 21-22Zm-48 78 32 5 20 27-8 31-30 27-16 47-27 53-30-17-7-53 13-42-16-34 19-44Zm424-30 42-14 38 17 7 28-25 24-48-1-27-24 13-30Zm98 16 43-4 42 22-3 27-39 12-42-19-20-22 19-16Zm-10 78 43 10 24 28-12 29-39 2-28-29 12-40Zm-169 27 38-10 27 19-12 29-39 7-23-20 9-25Z" />
+            {ports.map((port, index) => {
+              const point = projectPort(port);
+              return (
+                <g
+                  class="port-marker"
+                  role="button"
+                  tabindex="0"
+                  aria-label={`${port.name}, ${port.country}, ${port.region}`}
+                  data-port-marker
+                  data-region={port.region}
+                  data-name={port.name.toLowerCase()}
+                  data-country={port.country.toLowerCase()}
+                  data-port-name={port.name}
+                  data-port-country={port.country}
+                  data-port-region={port.region}
+                  data-x={point.x}
+                  data-y={point.y}
+                  style={`--pulse-delay: ${index * 120}ms`}
+                >
+                  <circle class="port-pulse" cx={point.x} cy={point.y} r="8" aria-hidden="true" />
+                  <circle class="port-dot" cx={point.x} cy={point.y} r="8" aria-hidden="true" />
+                </g>
+              );
+            })}
+          </svg>
+          <aside class="port-tooltip" data-port-tooltip role="dialog" aria-live="polite" aria-labelledby="port-tooltip-title" hidden>
+            <button class="tooltip-close" type="button" data-tooltip-close aria-label="Close port details">&times;</button>
+            <p class="tooltip-region" data-tooltip-region></p>
+            <h2 id="port-tooltip-title" data-tooltip-name></h2>
+            <p data-tooltip-country></p>
+            <a class="tooltip-link" data-tooltip-link href="/contact">Request a quote for this port <span aria-hidden="true" class="arrow">&#8594;</span></a>
+          </aside>
+        </div>
+      </section>
+      <section class="directory-section" aria-labelledby="directory-title">
+        <div class="directory-heading">
+          <div>
+            <p class="eyebrow">Explore the network</p>
+            <h2 id="directory-title">Port Directory <span class="count-badge">{ports.length}</span></h2>
+          </div>
+          <p>Browse every supported port by region or search for a specific destination.</p>
+        </div>
+        <div class="region-summary" role="group" aria-label="Port totals by region">
+          {regionCounts.map((region) => (
+            <button type="button" data-region-filter={region.name} data-region-summary={region.name} aria-pressed="false">
+              {region.name} <strong>({region.count})</strong>
+            </button>
+          ))}
+        </div>
+        <div class="directory-grid">
+          {ports.map((port) => (
+            <article class="port-card" data-port-card data-region={port.region} data-name={port.name.toLowerCase()} data-country={port.country.toLowerCase()}>
+              <div class="port-card-top">
+                <div>
+                  <h3>{port.name}</h3>
+                  <p>{port.country}</p>
+                </div>
+                <span class="region-badge">{port.region}</span>
+              </div>
+              <a href={`/contact?port=${encodeURIComponent(port.name)}`}>Request support <span aria-hidden="true">&rarr;</span></a>
+            </article>
+          ))}
+        </div>
+        <p class="empty-state" data-empty-state hidden>No ports found</p>
+      </section>
+      <RelatedPorts />
+  </main>
+</Layout>
+
+<script>
+  let cleanupPorts = () => {};
+
+  function initPorts() {
+    const portsPage = document.querySelector<HTMLElement>(".ports-page");
+    if (!portsPage || portsPage.dataset.initialized === "true") return;
+    cleanupPorts();
+    portsPage.dataset.initialized = "true";
+    const searchInput = portsPage.querySelector<HTMLInputElement>("#port-search");
+    const filterButtons = portsPage.querySelectorAll<HTMLButtonElement>("[data-region-filter]");
+    const portMarkers = portsPage.querySelectorAll<SVGGElement>("[data-port-marker]");
+    const portCards = portsPage.querySelectorAll<HTMLElement>("[data-port-card]");
+    const emptyState = portsPage.querySelector<HTMLElement>("[data-empty-state]");
+    const resetFilters = portsPage.querySelector<HTMLButtonElement>("[data-reset-filters]");
+    const mapStage = portsPage.querySelector<HTMLElement>(".map-stage");
+    const tooltip = portsPage.querySelector<HTMLElement>("[data-port-tooltip]");
+    const tooltipName = portsPage.querySelector<HTMLElement>("[data-tooltip-name]");
+    const tooltipCountry = portsPage.querySelector<HTMLElement>("[data-tooltip-country]");
+    const tooltipRegion = portsPage.querySelector<HTMLElement>("[data-tooltip-region]");
+    const tooltipLink = portsPage.querySelector<HTMLAnchorElement>("[data-tooltip-link]");
+    const tooltipClose = portsPage.querySelector<HTMLButtonElement>("[data-tooltip-close]");
+    let activeRegion = "All";
+    let selectedMarker: SVGGElement | null = null;
+    const controller = new AbortController();
+    cleanupPorts = () => controller.abort();
+
+  function closeTooltip() {
+    if (!tooltip) return;
+    tooltip.hidden = true;
+    selectedMarker?.classList.remove("is-selected");
+    selectedMarker = null;
+  }
+
+  function openTooltip(marker: SVGGElement) {
+    if (!tooltip || !mapStage || !tooltipName || !tooltipCountry || !tooltipRegion || !tooltipLink) return;
+    selectedMarker?.classList.remove("is-selected");
+    selectedMarker = marker;
+    selectedMarker.classList.add("is-selected");
+    tooltipName.textContent = marker.dataset.portName ?? "";
+    tooltipCountry.textContent = marker.dataset.portCountry ?? "";
+    tooltipRegion.textContent = marker.dataset.portRegion ?? "";
+    tooltipLink.href = `/contact?port=${encodeURIComponent(marker.dataset.portName ?? "")}`;
+    tooltip.style.left = `${Number(marker.dataset.x) / 12}%`;
+    tooltip.style.top = `${Number(marker.dataset.y) / 6}%`;
+    tooltip.classList.toggle("tooltip-left", Number(marker.dataset.x) > 780);
+    tooltip.hidden = false;
+  }
+
+  function updatePorts() {
+    if (!searchInput || !emptyState) return;
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    let visibleCount = 0;
+    const hasActiveFilter = activeRegion !== "All" || searchTerm.length > 0;
+
+    portMarkers.forEach((marker) => {
+      const matchesRegion = activeRegion === "All" || marker.dataset.region === activeRegion;
+      const matchesSearch = (marker.dataset.name ?? "").includes(searchTerm) || (marker.dataset.country ?? "").includes(searchTerm);
+      const isVisible = matchesRegion && matchesSearch;
+      marker.classList.toggle("is-filtered", !isVisible);
+      if (isVisible) visibleCount += 1;
+      if (!isVisible && selectedMarker === marker) closeTooltip();
+    });
+
+    portCards.forEach((card) => {
+      const matchesRegion = activeRegion === "All" || card.dataset.region === activeRegion;
+      const matchesSearch = (card.dataset.name ?? "").includes(searchTerm) || (card.dataset.country ?? "").includes(searchTerm);
+      const isVisible = matchesRegion && matchesSearch;
+      card.hidden = !isVisible;
+    });
+
+    resetFilters?.toggleAttribute("hidden", !hasActiveFilter);
+    emptyState.hidden = visibleCount !== 0;
+  }
+
+  portMarkers.forEach((marker) => {
+    marker.addEventListener("click", () => openTooltip(marker), { signal: controller.signal });
+    marker.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openTooltip(marker);
+      }
+    }, { signal: controller.signal });
+  });
+
+  searchInput?.addEventListener("input", updatePorts, { signal: controller.signal });
+  filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      activeRegion = button.dataset.regionFilter ?? "All";
+      filterButtons.forEach((filterButton) => {
+        const isSameRegion = filterButton.dataset.regionFilter === activeRegion;
+        filterButton.classList.toggle("active", isSameRegion);
+        filterButton.setAttribute("aria-pressed", String(isSameRegion));
+      });
+      updatePorts();
+    }, { signal: controller.signal });
+  });
+
+  resetFilters?.addEventListener("click", () => {
+    activeRegion = "All";
+    if (searchInput) searchInput.value = "";
+    filterButtons.forEach((filterButton) => {
+      const isAll = filterButton.dataset.regionFilter === "All";
+      filterButton.classList.toggle("active", isAll);
+      filterButton.setAttribute("aria-pressed", String(isAll));
+    });
+    updatePorts();
+    searchInput?.focus();
+  }, { signal: controller.signal });
+
+  tooltipClose?.addEventListener("click", closeTooltip, { signal: controller.signal });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeTooltip();
+  }, { signal: controller.signal });
+  document.addEventListener("click", (event) => {
+    const target = event.target as Node;
+    if (tooltip?.hidden || tooltip?.contains(target) || Array.from(portMarkers).some((marker) => marker.contains(target))) return;
+    closeTooltip();
+  }, { signal: controller.signal });
+  updatePorts();
+  }
+
+  if (document.documentElement.dataset.portsLifecycleInitialized !== "true") {
+    document.documentElement.dataset.portsLifecycleInitialized = "true";
+    document.addEventListener("DOMContentLoaded", initPorts);
+    document.addEventListener("astro:page-load", initPorts);
+  }
+</script>
+
+<style>
+  .ports-page { max-width: 1280px; margin: 0 auto; padding: clamp(4rem, 8vw, 7rem) clamp(1.25rem, 5vw, 3rem); }
+  .page-heading { max-width: 760px; margin-bottom: clamp(3rem, 7vw, 6rem); }
+  .eyebrow { margin: 0 0 1rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(2.6rem, 6vw, 5.5rem); line-height: 1; letter-spacing: -0.04em; }
+  .page-heading > p:last-child { max-width: 600px; margin: 2rem 0 0; color: var(--muted); font-size: 1.15rem; line-height: 1.7; }
+  .network-summary { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.25rem; }
+  .network-summary span { display: flex; gap: 0.45rem; align-items: baseline; padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: 0.55rem; background: var(--surface); color: var(--muted); font-size: 0.82rem; }
+  .network-summary strong { color: var(--light-accent); font-size: 1.1rem; }
+  .port-controls { padding: 1.25rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--surface); box-shadow: var(--shadow); }
+  .search-label { display: block; margin-bottom: 0.6rem; color: var(--muted); font-size: 0.9rem; }
+  .search-input { width: 100%; max-width: 560px; padding: 1rem 1.1rem; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); font: inherit; }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 0.65rem; margin: 1.5rem 0 0; }
+  button { padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; font: inherit; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+  button:hover, button.active { border-color: var(--light-accent); color: var(--light-accent); }
+  .reset-filters { margin-top: 1rem; padding: 0.45rem 0.75rem; border-color: transparent; color: var(--light-accent); font-size: 0.85rem; text-decoration: underline; text-underline-offset: 0.2rem; }
+  .reset-filters:hover, .reset-filters:focus-visible { border-color: var(--border); background: var(--light-bg); }
+  .map-section { position: relative; margin-top: 2rem; padding: clamp(1.25rem, 4vw, 2.5rem); border: 1px solid var(--border); border-radius: 1rem; background: linear-gradient(145deg, var(--light-bg), var(--surface)); }
+  .map-heading { display: flex; justify-content: space-between; gap: 2rem; align-items: end; margin-bottom: 1rem; }
+  .map-heading .eyebrow { margin-bottom: 0.6rem; }
+  .map-heading h2 { max-width: 16ch; margin: 0; font-size: clamp(1.5rem, 3vw, 2.5rem); letter-spacing: -0.04em; }
+  .map-heading > p { max-width: 260px; margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; text-align: right; }
+  .map-stage { position: relative; width: 100%; max-height: 70vh; aspect-ratio: 2 / 1; margin-top: 1.5rem; overflow: hidden; border: 1px solid var(--border); border-radius: 0.75rem; background: var(--light-surface); }
+  .world-map { display: block; width: 100%; height: 100%; }
+  .land { fill: #d5e5e2; opacity: 0.9; }
+  .port-marker { cursor: pointer; outline: none; transition: opacity var(--dur-fast) var(--ease); }
+  .port-marker.is-filtered { opacity: 0; pointer-events: none; }
+  .port-marker:focus-visible .port-dot, .port-marker:hover .port-dot { stroke: var(--light-text); stroke-width: 2; }
+  .port-dot { fill: var(--accent); stroke: var(--light-surface); stroke-width: 1.5; filter: drop-shadow(0 0 3px var(--accent)); vector-effect: non-scaling-stroke; }
+  .port-marker.is-selected .port-dot { r: 10px; fill: var(--accent-hover); }
+  .port-pulse { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0.8; filter: drop-shadow(0 0 2px var(--accent)); transform-box: fill-box; transform-origin: center; animation: port-pulse 2s ease-out infinite var(--pulse-delay); vector-effect: non-scaling-stroke; }
+  .port-tooltip { position: absolute; z-index: 2; width: min(280px, calc(100% - 2rem)); padding: 1.25rem; opacity: 0; transform: translate(0, calc(-50% + 4px)); border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: 0 1rem 2rem rgb(10 26 47 / 25%); transition: opacity 200ms ease, transform 200ms ease; }
+  .port-tooltip.tooltip-left { transform: translate(-100%, calc(-50% + 4px)); }
+  .port-tooltip:not([hidden]) { opacity: 1; transform: translate(0, -50%); }
+  .port-tooltip.tooltip-left:not([hidden]) { transform: translate(-100%, -50%); }
+  .tooltip-close { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.2rem 0.45rem; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1.2rem; line-height: 1; }
+  .tooltip-region { margin: 0 0 0.5rem; color: var(--light-accent); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .port-tooltip h2 { margin: 0 0 0.25rem; font-size: 1.35rem; letter-spacing: -0.02em; }
+  .port-tooltip > p:not(.tooltip-region) { margin: 0; color: var(--muted); }
+  .tooltip-link { display: inline-flex; gap: 0.4rem; align-items: center; margin-top: 1rem; color: var(--light-accent); font-weight: 700; text-decoration-color: var(--light-accent); text-underline-offset: 0.25rem; }
+  .arrow { white-space: nowrap; }
+  .directory-section { margin-top: clamp(4rem, 8vw, 7rem); }
+  .directory-heading { display: flex; justify-content: space-between; gap: 2rem; align-items: end; }
+  .directory-heading .eyebrow { margin-bottom: 0.6rem; }
+  .directory-heading h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); letter-spacing: -0.05em; }
+  .directory-heading > p { max-width: 290px; margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; text-align: right; }
+  .count-badge { display: inline-grid; place-items: center; min-width: 2.3rem; min-height: 1.7rem; margin-left: 0.45rem; padding: 0.15rem 0.5rem; transform: translateY(-0.35rem); border-radius: 999px; background: var(--accent); color: var(--dark-bg); font-size: 0.8rem; letter-spacing: 0; vertical-align: middle; }
+  .region-summary { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; margin-top: 1.75rem; }
+  .region-summary button { padding: 0.35rem 0.1rem; border: 0; border-radius: 0; color: var(--light-accent); font-size: 0.9rem; font-weight: 700; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 0.25rem; }
+  .region-summary button:not(:last-child)::after { margin-left: 0.75rem; color: var(--muted); content: "·"; text-decoration: none; }
+  .region-summary button:hover, .region-summary button:focus-visible, .region-summary button.active { border: 0; background: transparent; color: var(--light-accent); text-decoration-color: currentColor; }
+  .directory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .port-card { display: flex; min-height: 175px; flex-direction: column; justify-content: space-between; padding: 1.25rem; border: 1px solid var(--light-border); border-radius: 8px; background: var(--light-surface); box-shadow: 0 0.75rem 2rem rgb(16 42 56 / 5%); transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .port-card:hover { transform: translateY(-4px); border-color: var(--light-accent); box-shadow: 0 1rem 2.5rem rgb(16 42 56 / 11%); }
+  .port-card-top { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+  .port-card h3 { margin: 0; color: var(--light-text); font-size: 1.2rem; letter-spacing: -0.02em; }
+  .port-card p { margin: 0.35rem 0 0; color: var(--light-muted); font-size: 0.9rem; }
+  .region-badge { flex: 0 0 auto; padding: 0.35rem 0.55rem; border-radius: 999px; background: var(--light-accent); color: var(--light-surface); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; }
+  .port-card > a { display: inline-flex; gap: 0.4rem; align-items: center; margin-top: 1.5rem; color: var(--light-accent); font-size: 0.85rem; font-weight: 700; text-underline-offset: 0.25rem; }
+  .port-card > a span { transition: transform var(--dur-fast) var(--ease); }
+  .port-card > a:hover span, .port-card > a:focus-visible span { transform: translateX(4px); }
+  .directory-section .empty-state { margin: 1.5rem 0 0; padding: 2rem; border: 1px dashed var(--border); border-radius: 0.75rem; text-align: center; }
+  @keyframes port-pulse { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
+  .empty-state { color: var(--muted); }
+  [hidden] { display: none; }
+  @media (max-width: 600px) {
+    .directory-heading { align-items: flex-start; flex-direction: column; gap: 0.75rem; }
+    .directory-heading > p { text-align: left; }
+    .directory-grid { grid-template-columns: 1fr; }
+    .map-heading { align-items: flex-start; flex-direction: column; gap: 0.75rem; }
+    .map-heading > p { text-align: left; }
+    .map-stage { aspect-ratio: 1 / 1; }
+    .port-dot { r: 11px; }
+    .port-marker.is-selected .port-dot { r: 13px; }
+    .port-pulse { r: 11px; }
+    .port-tooltip, .port-tooltip.tooltip-left { position: fixed; right: 1rem; bottom: 1rem; left: 1rem; width: auto; transform: translateY(4px); }
+    .port-tooltip:not([hidden]), .port-tooltip.tooltip-left:not([hidden]) { transform: translateY(0); }
+  }
+  @media (min-width: 601px) and (max-width: 900px) { .directory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (prefers-reduced-motion: reduce) { .port-pulse { animation: none; opacity: 0.35; } .port-tooltip { transition: none; } }
+</style>

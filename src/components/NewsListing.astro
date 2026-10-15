@@ -1,0 +1,75 @@
+---
+import type { Page } from "astro";
+import type { CollectionEntry } from "astro:content";
+
+type NewsEntry = CollectionEntry<"news">;
+type NewsPagination = Page<NewsEntry>;
+const { posts, selectedCategory = "all", pagination } = Astro.props as {
+  posts: NewsEntry[];
+  selectedCategory?: string;
+  pagination?: NewsPagination;
+};
+const formatDate = (date: Date) => date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+const categoryLabel = (category: string) => category.charAt(0).toUpperCase() + category.slice(1);
+const categories = ["all", "news", "insights", "press"];
+---
+
+<header class="page-heading">
+  <p class="eyebrow">News and insights</p>
+  <h1>Useful updates for every port call.</h1>
+  <p>Practical market notes, service updates, and company news from the Transworld Marine team.</p>
+</header>
+
+<nav class="category-tabs" aria-label="Filter news by category">
+  {categories.map((category) => (
+    <a class:list={{ active: selectedCategory === category }} href={category === "all" ? "/news/" : `/news/?category=${category}`} aria-current={selectedCategory === category ? "page" : undefined}>
+      {categoryLabel(category)}
+    </a>
+  ))}
+</nav>
+
+<section class="news-grid" aria-live="polite" aria-label="News and insights posts">
+  {posts.map((post) => (
+    <article class="news-card">
+      <div class="news-card-meta">
+        <span class="category-badge">{categoryLabel(post.data.category)}</span>
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+      </div>
+      <h2>{post.data.title}</h2>
+      <p>{post.data.summary}</p>
+      <a class="read-more" href={`/news/${post.id}`} aria-label={`Read more: ${post.data.title}`}>Read more <span aria-hidden="true">-&gt;</span></a>
+    </article>
+  ))}
+</section>
+
+{posts.length === 0 && <p class="empty-state">No posts found in this category.</p>}
+
+{pagination && pagination.lastPage > 1 && (
+  <nav class="pagination" aria-label="News pages">
+    {pagination.url.prev && <a href={pagination.url.prev}>Previous</a>}
+    <span>Page {pagination.currentPage} of {pagination.lastPage}</span>
+    {pagination.url.next && <a href={pagination.url.next}>Next</a>}
+  </nav>
+)}
+
+<style>
+  .page-heading { max-width: 760px; margin-bottom: clamp(3rem, 7vw, 6rem); }
+  .eyebrow { margin: 0 0 1.25rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(2.6rem, 6vw, 5.5rem); line-height: 1; letter-spacing: -0.04em; }
+  .page-heading > p:last-child { max-width: 600px; margin: 2rem 0 0; color: var(--muted); font-size: 1.15rem; line-height: 1.7; }
+  .category-tabs { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-bottom: 3rem; }
+  .category-tabs a { padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); text-decoration: none; }
+  .category-tabs a:hover, .category-tabs a:focus-visible, .category-tabs a.active { border-color: var(--light-accent); color: var(--light-accent); }
+  .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .news-card { display: flex; min-height: 300px; flex-direction: column; padding: 1.5rem; border: 1px solid var(--border); background: var(--surface); }
+  .news-card-meta { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; color: var(--muted); font-size: 0.78rem; }
+  .category-badge { color: var(--light-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .news-card h2 { margin: 2.5rem 0 1rem; font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.05; letter-spacing: -0.03em; }
+  .news-card > p { margin: 0; color: var(--muted); line-height: 1.65; }
+  .read-more { display: inline-flex; gap: 0.45rem; align-items: center; margin-top: auto; padding-top: 2rem; color: var(--light-accent); font-weight: 700; text-decoration-color: var(--light-accent); text-underline-offset: 0.3rem; }
+  .empty-state { margin: 3rem 0; color: var(--muted); }
+  .pagination { display: flex; justify-content: center; gap: 1rem; align-items: center; margin-top: 4rem; color: var(--muted); }
+  .pagination a { color: var(--light-accent); font-weight: 700; }
+  @media (max-width: 760px) { .news-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .news-grid { grid-template-columns: 1fr; } .news-card { min-height: 0; } }
+</style>

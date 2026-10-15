@@ -1,0 +1,76 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { services } from "../../data/services.js";
+---
+
+<Layout title="Services" description="Practical provisions, stores, and logistics support for every vessel and port call.">
+  <main class="services-page">
+    <header class="page-heading">
+      <p class="eyebrow">Our services</p>
+      <h1>Practical support for every port call.</h1>
+      <p>From the stores your crew relies on to the delivery details behind them, we make ship supply easier to plan and simpler to receive.</p>
+      <section class="service-summary" aria-label="Service highlights">
+        <span><strong>03</strong> core services</span>
+        <span><strong>120+</strong> ports supported</span>
+        <span><strong>24/7</strong> responsive coordination</span>
+      </section>
+    </header>
+
+    <section class="service-grid" aria-label="Ship supply services">
+      {services.map((service) => (
+        <article class="service-card">
+          <img class="service-image" src={service.image} alt={service.imageAlt} width="960" height="600" loading="lazy" onerror="this.style.display='none'" />
+          <div class="service-card-content">
+            <p class="service-type">Marine supply</p>
+            <h2>{service.title}</h2>
+            <p>{service.summary}</p>
+            <a class="btn btn-secondary" href={`/services/${service.slug}`}>View {service.title.toLowerCase()} <span aria-hidden="true">-&gt;</span></a>
+          </div>
+        </article>
+      ))}
+    </section>
+    <section class="service-next-steps" aria-label="Next steps">
+      <a class="next-step-card" href="/ports">
+        <span class="next-step-icon" aria-hidden="true">&#9673;</span>
+        <span><strong>See where we deliver</strong><small>Explore our global port network.</small></span>
+        <span class="next-step-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a class="next-step-card" href="/contact">
+        <span class="next-step-icon" aria-hidden="true">&#8599;</span>
+        <span><strong>Ready to order</strong><small>Tell us what your vessel needs.</small></span>
+        <span class="next-step-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .services-page { max-width: 1280px; margin: 0 auto; padding: clamp(4rem, 8vw, 7rem) clamp(1.25rem, 5vw, 3rem); }
+  .page-heading { max-width: 760px; margin-bottom: clamp(3rem, 7vw, 6rem); }
+  .eyebrow, .service-type { margin: 0 0 1rem; color: var(--light-accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(2.6rem, 6vw, 5.5rem); line-height: 1; letter-spacing: -0.04em; }
+  .page-heading > p:last-child { max-width: 600px; margin: 2rem 0 0; color: var(--muted); font-size: 1.15rem; line-height: 1.7; }
+  .service-summary { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.25rem; }
+  .service-summary span { display: flex; gap: 0.45rem; align-items: baseline; padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: 0.55rem; background: var(--surface); color: var(--muted); font-size: 0.82rem; }
+  .service-summary strong { color: var(--light-accent); font-size: 1.1rem; }
+  .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .service-card { display: flex; flex-direction: column; min-height: 450px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow); transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .service-card:hover { transform: translateY(-4px); box-shadow: 0 1.25rem 3rem var(--border); }
+  .service-image { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: linear-gradient(135deg, var(--surface), var(--border)); transition: transform var(--dur) var(--ease); }
+  .service-card:hover .service-image { transform: scale(1.04); }
+  .services-page .btn-secondary { border-color: var(--light-accent); color: var(--light-accent); }
+  .services-page .btn-secondary:hover, .services-page .btn-secondary:focus-visible { background-color: color-mix(in srgb, var(--light-accent) 15%, transparent); }
+  .service-card-content { display: flex; flex: 1; flex-direction: column; padding: clamp(1.5rem, 3vw, 2.5rem); }
+  .service-type { margin-bottom: auto; }
+  h2 { margin: 3rem 0 1rem; font-size: clamp(1.7rem, 3vw, 2.5rem); }
+  .service-next-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: clamp(4rem, 8vw, 7rem); padding: 1.25rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--light-bg); }
+  .next-step-card { display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; padding: 1.25rem; border: 1px solid var(--border); border-radius: 0.65rem; background: var(--surface); color: var(--light-text); text-decoration: none; transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .next-step-card:hover { transform: translateY(-3px); border-color: var(--light-accent); }
+  .next-step-icon { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 0.5rem; background: var(--accent-soft); color: var(--light-accent); font-size: 1.3rem; }
+  .next-step-card strong, .next-step-card small { display: block; }
+  .next-step-card strong { font-size: 1.05rem; }
+  .next-step-card small { margin-top: 0.25rem; color: var(--muted); font-size: 0.85rem; }
+  .next-step-arrow { color: var(--light-accent); font-size: 1.25rem; }
+  @media (max-width: 700px) { .service-next-steps { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .service-grid { grid-template-columns: 1fr; } .service-card { min-height: 0; } }
+</style>

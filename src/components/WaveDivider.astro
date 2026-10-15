@@ -1,0 +1,20 @@
+---
+const { from = "--dark-bg", to = "--light-bg" } = Astro.props;
+---
+
+<div class="wave-wrap" style={`--wave-from: var(${from}); --wave-to: var(${to});`} aria-hidden="true">
+  <svg viewBox="0 0 2400 80" preserveAspectRatio="none">
+    <g class="wave-track">
+      <path id="wave-tile" d="M0 40C100 0 200 0 300 40S500 80 600 40 800 0 900 40C1000 80 1100 80 1200 40V80H0Z" />
+      <use href="#wave-tile" x="1200" />
+    </g>
+  </svg>
+</div>
+
+<style>
+  .wave-wrap { display: block; position: relative; z-index: 1; width: 100%; height: 72px; overflow: hidden; margin-bottom: -4px; background: var(--wave-from); line-height: 0; font-size: 0; }
+  svg { display: block; width: 200%; height: calc(100% + 4px); vertical-align: bottom; }
+  .wave-track { fill: var(--wave-to); transform-box: fill-box; animation: wave-drift 30s linear infinite; }
+  @keyframes wave-drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .wave-track { animation: none; } }
+</style>

@@ -1,0 +1,44 @@
+---
+interface Crumb {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  crumbs: Crumb[];
+}
+
+const { crumbs } = Astro.props;
+---
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    {crumbs.map((crumb, index) => {
+      const isCurrent = index === crumbs.length - 1;
+      return (
+        <li aria-current={isCurrent ? "page" : undefined}>
+          {isCurrent ? (
+            <span title={crumb.label}>{crumb.label}</span>
+          ) : (
+            <a href={crumb.href} title={crumb.label}>{crumb.label}</a>
+          )}
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+
+<style>
+  .breadcrumbs { margin-top: 1.5rem; margin-bottom: 0; color: var(--muted, var(--light-muted)); font-size: 0.85rem; }
+  ol { display: flex; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; }
+  li { display: flex; min-width: 0; align-items: center; }
+  li:not(:last-child)::after { margin: 0 0.6rem; color: var(--muted, var(--light-muted)); content: "›"; }
+  a, li > span { display: block; max-width: min(36vw, 18rem); overflow: hidden; color: inherit; text-overflow: ellipsis; white-space: nowrap; }
+  a { text-underline-offset: 0.2rem; }
+  a:hover, a:focus-visible { color: var(--light-accent); }
+  [aria-current="page"] { color: var(--light-text); }
+  @media (max-width: 600px) {
+    .breadcrumbs { margin-top: 1rem; }
+    a, li > span { max-width: 34vw; }
+  }
+</style>

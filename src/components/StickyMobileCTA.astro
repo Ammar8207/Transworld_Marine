@@ -1,0 +1,68 @@
+---
+import { site } from "../config.js";
+
+const phoneHref = `tel:${site.phone.replace(/[^+\d]/g, "")}`;
+---
+
+<aside class="sticky-mobile-cta" data-sticky-mobile-cta transition:persist aria-label="Quick contact actions">
+  <a class="btn btn-primary" href="/contact">Request a quote</a>
+  <a class="btn btn-secondary" href={phoneHref}>Call us</a>
+</aside>
+
+<script>
+  function initStickyMobileCTA() {
+    const stickyBar = document.querySelector<HTMLElement>("[data-sticky-mobile-cta]");
+    if (!stickyBar) return;
+
+    const observedElements = document.querySelectorAll<HTMLElement>("[data-primary-cta]");
+    const isMobile = window.matchMedia("(max-width: 767px)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const existingObserver = stickyBar.dataset.observerInitialized === "true";
+
+    if (existingObserver) {
+      const observer = (stickyBar as HTMLElement & { stickyObserver?: IntersectionObserver }).stickyObserver;
+      observer?.disconnect();
+    }
+
+    const visibleElements = new Set<Element>();
+    const updateVisibility = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) visibleElements.add(entry.target);
+        else visibleElements.delete(entry.target);
+      });
+      stickyBar.classList.toggle("hidden", visibleElements.size > 0);
+    };
+
+    if (!isMobile.matches || observedElements.length === 0) {
+      stickyBar.classList.remove("hidden");
+    }
+
+    if (observedElements.length > 0) {
+      const observer = new IntersectionObserver(updateVisibility, { threshold: 0.15 });
+      observedElements.forEach((element) => observer.observe(element));
+      (stickyBar as HTMLElement & { stickyObserver?: IntersectionObserver }).stickyObserver = observer;
+      stickyBar.dataset.observerInitialized = "true";
+    }
+
+    if (!reducedMotion.matches) {
+      stickyBar.classList.add("has-transition");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initStickyMobileCTA);
+  document.addEventListener("astro:page-load", initStickyMobileCTA);
+</script>
+
+<style>
+  .sticky-mobile-cta { position: fixed; right: 0; bottom: 0; left: 0; z-index: 150; display: none; gap: 0.65rem; padding: 0.75rem 1rem env(safe-area-inset-bottom, 0px); border-top: 1px solid var(--border); background: var(--dark-surface); }
+  .sticky-mobile-cta .btn { flex: 1 1 0; min-width: 0; }
+  .sticky-mobile-cta .btn-secondary { border-color: var(--accent); color: var(--dark-text); }
+  .sticky-mobile-cta.has-transition { transition: opacity 200ms ease; }
+  .sticky-mobile-cta.hidden { opacity: 0; pointer-events: none; }
+  @media (max-width: 767px) {
+    .sticky-mobile-cta { display: flex; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sticky-mobile-cta.has-transition { transition: none; }
+  }
+</style>
